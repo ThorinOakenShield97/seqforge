@@ -1,5 +1,7 @@
 import typer
 
+from seqforge.commands.version import app as version_app
+
 app = typer.Typer(
     help="A modern toolkit for biological sequence analysis."
 )
@@ -11,8 +13,7 @@ def main() -> None:
     pass
 
 
-@app.command()
-def hello() -> None:
-    """Test command."""
-
-    print("Hello from SeqForge!")
+app.add_typer(
+    version_app,
+    name="version",
+)
