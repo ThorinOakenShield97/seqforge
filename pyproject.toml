@@ -7,7 +7,9 @@ authors = [
     { name = "ThorinOakenShield97", email = "eguillen.galvez@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "typer>=0.27.0",
+]
 
 [project.scripts]
 seqforge = "seqforge.main:main"

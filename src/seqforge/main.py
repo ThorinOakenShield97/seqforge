@@ -1,6 +1,7 @@
-def main() -> None:
-    """Main entry point for SeqForge."""
+from seqforge.cli import app
 
-    print("Welcome to SeqForge!")
-    print("A modern toolkit for biological sequence analysis.")
-    print("Version: 0.1.0")
+
+def main() -> None:
+    """Run the SeqForge CLI."""
+
+    app()
