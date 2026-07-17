@@ -1,12 +1,12 @@
 [project]
 name = "seqforge"
 version = "0.1.0"
-description = "Add your description here"
+description = "A modern Python toolkit for biological sequence analysis."
 readme = "README.md"
 authors = [
     { name = "ThorinOakenShield97", email = "eguillen.galvez@gmail.com" }
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = []
 
 [project.scripts]
