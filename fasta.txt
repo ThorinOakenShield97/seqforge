@@ -1,0 +1,7 @@
+>seq1
+ATGC
+ATGC
+
+>seq2
+TTTT
+GGGG
