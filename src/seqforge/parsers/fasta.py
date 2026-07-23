@@ -1,5 +1,5 @@
 from pathlib import Path
-from seqforge.methods.sequence import Sequence
+from seqforge.models.sequence import Sequence
 
 def parse_fasta(path: Path) -> list[Sequence]:
     """Parse a FASTA file and return its sequences."""
