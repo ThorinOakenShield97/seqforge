@@ -1,9 +1,11 @@
 from pathlib import Path
 from seqforge.models.sequence import Sequence
+from seqforge.exceptions import InvalidFastaError
 
 def parse_fasta(path: Path) -> list[Sequence]:
     """Parse a FASTA file and return its sequences."""
     records = []
+    current_id = None
     with open(path,'r') as file:
         current_seq = ''
         for line in file: 
@@ -15,7 +17,11 @@ def parse_fasta(path: Path) -> list[Sequence]:
                     current_seq = ''
                 current_id = line[1:].strip()
             else:
-                current_seq += line.strip()
+                if current_id:
+                    current_seq += line.strip()
+                else:
+                    raise InvalidFastaError('Missing FASTA header.')
+ 
 
         # Save the last sequence after reaching the end of the file.
         my_seq = Sequence(id = current_id, sequence = current_seq)
@@ -23,23 +29,3 @@ def parse_fasta(path: Path) -> list[Sequence]:
 
         
     return records
-
-"""
-1. Crear una lista vacía para guardar las secuencias.
-
-2. Abrir el archivo.
-
-3. Leer línea por línea.
-
-4. Si la línea empieza por '>':
-      - Si ya estábamos construyendo una secuencia...
-            guardarla en la lista.
-      - Empezar una nueva secuencia.
-
-5. Si la línea no empieza por '>':
-      - Añadir esa línea a la secuencia actual.
-
-6. Cuando termine el archivo...
-      - Guardar también la última secuencia.
-
-7. Devolver la lista."""

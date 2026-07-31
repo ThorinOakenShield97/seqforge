@@ -1,6 +1,9 @@
 from pathlib import Path
 
 from seqforge.parsers.fasta import parse_fasta
+from seqforge.exceptions import InvalidFastaError
+
+import pytest
 
 
 def test_parse_single_sequence():
@@ -34,3 +37,7 @@ def test_parse_multiline_sequence():
     assert len(records) == 1
     assert records[0].id == "seq1"
     assert records[0].sequence == "ATGCGGGGTTTT"
+
+def test_parse_missing_header():
+    with pytest.raises(InvalidFastaError):
+        parse_fasta(Path("tests/data/invalid_missing_header.fasta"))
