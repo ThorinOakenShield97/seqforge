@@ -24,6 +24,8 @@ def parse_fasta(path: Path) -> list[Sequence]:
  
 
         # Save the last sequence after reaching the end of the file.
+        if len(current_seq) == 0:
+            raise InvalidFastaError('Missing sequence')
         my_seq = Sequence(id = current_id, sequence = current_seq)
         records.append(my_seq)
 

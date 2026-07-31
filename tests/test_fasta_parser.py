@@ -41,3 +41,8 @@ def test_parse_multiline_sequence():
 def test_parse_missing_header():
     with pytest.raises(InvalidFastaError):
         parse_fasta(Path("tests/data/invalid_missing_header.fasta"))
+
+
+def test_parse_header_without_sequence():
+    with pytest.raises(InvalidFastaError):
+        parse_fasta(Path("tests/data/header_without_sequence.fasta"))
