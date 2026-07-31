@@ -46,3 +46,11 @@ def test_parse_missing_header():
 def test_parse_header_without_sequence():
     with pytest.raises(InvalidFastaError):
         parse_fasta(Path("tests/data/header_without_sequence.fasta"))
+
+def test_parse_empty_file():
+    with pytest.raises(InvalidFastaError):
+        parse_fasta(Path("tests/data/empty_file.fasta"))
+
+def test_parse_empty_header():
+    with pytest.raises(InvalidFastaError):
+        parse_fasta(Path("tests/data/empty_header.fasta"))
