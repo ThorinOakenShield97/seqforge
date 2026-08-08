@@ -1,5 +1,25 @@
 from dataclasses import dataclass
 
+
+DNA_COMPLEMENTS = {
+    'A': 'T',
+    'T': 'A',
+    'C': 'G',
+    'G': 'C',
+    'R': 'Y',
+    'Y': 'R',
+    'S': 'S',
+    'W': 'W',
+    'K': 'M',
+    'M': 'K',
+    'B': 'V',
+    'V': 'B',
+    'D': 'H',
+    'H': 'D',
+    'N': 'N'
+}
+
+
 @dataclass
 class Sequence:
     id: str
@@ -23,13 +43,9 @@ class Sequence:
         reverse = self.sequence[::-1]
         rev_compl = ''
         for letter in reverse:
-            if letter in 'Aa':
-                rev_compl += 'T'
-            elif letter in 'Cc':
-                rev_compl += 'G'
-            elif letter in 'Gg':
-                rev_compl += 'C'
-            elif letter in 'Tt':
-                rev_compl += 'A'
+            if letter.upper() in DNA_COMPLEMENTS:
+                rev_compl += DNA_COMPLEMENTS[letter.upper()]
+            else:
+                raise ValueError("Invalid DNA base.")
 
         return rev_compl

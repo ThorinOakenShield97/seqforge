@@ -27,7 +27,7 @@ def test_reverse_complement():
     )
 
     assert seq.reverse_complement() == "GCAT"
-    
+
 
 def test_reverse_complement_lowercase():
     seq = Sequence(
@@ -36,3 +36,36 @@ def test_reverse_complement_lowercase():
     )
 
     assert seq.reverse_complement() == "GCAT"
+
+def test_reverse_complement_with_ambiguous_base():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGN"
+    )
+
+    assert seq.reverse_complement() == "NCAT"
+
+def test_reverse_complement_iupac():
+    seq = Sequence(
+        id="seq1",
+        sequence="ACGTRYSWKMBDHVN"
+    )
+
+    assert seq.reverse_complement() == "NBDHVKMWSRYACGT"
+
+def test_reverse_complement_invalid_base():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGX"
+    )
+
+    with pytest.raises(ValueError):
+        seq.reverse_complement()
+
+def test_reverse_complement_empty_sequence():
+    seq = Sequence(
+        id="seq1",
+        sequence=""
+    )
+
+    assert seq.reverse_complement() == ""
