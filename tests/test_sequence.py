@@ -153,3 +153,121 @@ def test_translate_iupac_ambiguous():
     )
 
     assert seq.translate() == "MX"
+
+def test_base_counts():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC"
+    )
+
+    assert seq.base_counts() == {
+        "A": 1,
+        "C": 1,
+        "G": 1,
+        "T": 1
+    }
+
+def test_base_counts_iupac():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGCNRY"
+    )
+
+    assert seq.base_counts() == {
+        "A": 1,
+        "T": 1,
+        "G": 1,
+        "C": 1,
+        "N": 1,
+        "R": 1,
+        "Y": 1
+    }
+
+def test_base_counts_lowercase():
+    seq = Sequence(
+        id="seq1",
+        sequence="atgcnry"
+    )
+
+    assert seq.base_counts() == {
+        "A": 1,
+        "T": 1,
+        "G": 1,
+        "C": 1,
+        "N": 1,
+        "R": 1,
+        "Y": 1
+    }
+
+def test_base_frequencies():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGCC"
+    )
+
+    assert seq.base_frequencies() == {
+        "A": 20.0,
+        "T": 20.0,
+        "G": 20.0,
+        "C": 40.0
+    }
+
+def test_base_frequencies_empty_sequence():
+    seq = Sequence(
+        id="seq1",
+        sequence=""
+    )
+
+    with pytest.raises(ValueError):
+        seq.base_frequencies()
+
+def test_base_frequencies_sum_to_100():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGCC"
+    )
+
+    frequencies = seq.base_frequencies()
+
+    assert sum(frequencies.values()) == 100.0
+
+def test_find_motif():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGCCATG"
+    )
+
+    assert seq.find_motif("ATG") == [0, 5]
+
+def test_find_motif_overlapping():
+    seq = Sequence(
+        id="seq1",
+        sequence="AAAA"
+    )
+
+    assert seq.find_motif("AAA") == [0, 1]
+
+def test_find_motif_lowercase():
+    seq = Sequence(
+        id="seq1",
+        sequence="atgccatg"
+    )
+
+    assert seq.find_motif("atg") == [0, 5]
+
+def test_find_motif_empty():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC"
+    )
+
+    with pytest.raises(ValueError):
+        seq.find_motif("")
+
+def test_find_motif_not_found():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC"
+    )
+
+    assert seq.find_motif("AAA") == []

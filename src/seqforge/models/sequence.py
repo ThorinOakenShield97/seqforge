@@ -81,6 +81,28 @@ class Sequence:
 
         return gc_count/total * 100
 
+    def base_counts(self):
+        sequence = self.sequence.upper()
+        counts = {}
+        for letter in sequence:
+            if letter in counts:
+                counts[letter] += 1
+            else:
+                counts[letter] = 1
+        return counts
+
+    def base_frequencies(self):
+        counts = self.base_counts()
+        total = len(self.sequence)
+
+        if total == 0:
+            raise ValueError('Cannot calculate base frequencies of an empty sequence')
+
+        frequencies = {}
+        for base in counts:
+            frequencies[base] = counts[base]/total * 100
+        return frequencies
+
     def reverse_complement(self):
         reverse = self.sequence[::-1]
         rev_compl = ''
@@ -121,4 +143,15 @@ class Sequence:
                 
         return protein
 
+    def find_motif(self,motif):
+        positions = []
+        sequence = self.sequence.upper()
+        motif = motif.upper()
+        if len(motif) == 0:
+            raise ValueError('Empty Motif')
+        for i in range(len(sequence)):
+            if sequence[i:i+len(motif)] == motif:
+                positions.append(i)
+
+        return positions
 
