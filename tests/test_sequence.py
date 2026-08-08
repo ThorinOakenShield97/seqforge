@@ -69,3 +69,28 @@ def test_reverse_complement_empty_sequence():
     )
 
     assert seq.reverse_complement() == ""
+
+def test_transcribe():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC"
+    )
+
+    assert seq.transcribe() == "AUGC"
+
+
+def test_transcribe_lowercase():
+    seq = Sequence(
+        id="seq1",
+        sequence="atgc"
+    )
+
+    assert seq.transcribe() == "AUGC"
+
+def test_transcribe_iupac():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGN"
+    )
+
+    assert seq.transcribe() == "AUGN"

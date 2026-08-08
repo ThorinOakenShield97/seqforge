@@ -49,3 +49,6 @@ class Sequence:
                 raise ValueError("Invalid DNA base.")
 
         return rev_compl
+
+    def transcribe(self):
+        return self.sequence.upper().replace('T', 'U')
