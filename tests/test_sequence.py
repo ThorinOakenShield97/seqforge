@@ -1,6 +1,6 @@
 import pytest
 
-from seqforge.models.sequence import Sequence
+from seqforge.models.sequence import Sequence, expand_iupac
 
 
 def test_seq_length():
@@ -94,3 +94,62 @@ def test_transcribe_iupac():
     )
 
     assert seq.transcribe() == "AUGN"
+
+def test_translate():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGGCC"
+    )
+
+    assert seq.translate() == "MA"
+
+def test_translate_stop():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGGCCTAA"
+    )
+
+    assert seq.translate() == "MA"
+
+def test_translate_without_start_codon():
+    seq = Sequence(
+        id="seq1",
+        sequence="CCCGGGAAC"
+    )
+
+    assert seq.translate() == ""
+
+def test_translate_incomplete_codon():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGGCCA"
+    )
+
+    assert seq.translate() == "MA"
+
+def test_translate_lowercase():
+    seq = Sequence(
+        id="seq1",
+        sequence="atggcc"
+    )
+
+    assert seq.translate() == "MA"
+
+def test_translate_iupac_unambiguous():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGGCN"
+    )
+
+    assert seq.translate() == "MA"
+
+def test_expand_iupac():
+    assert expand_iupac("GCN") == ["GCA", "GCC", "GCG", "GCT"]
+
+def test_translate_iupac_ambiguous():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGRNY"
+    )
+
+    assert seq.translate() == "MX"
