@@ -271,3 +271,62 @@ def test_find_motif_not_found():
     )
 
     assert seq.find_motif("AAA") == []
+
+def test_find_orfs():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGAAATAG"
+    )
+
+    assert seq.find_orfs() == ["ATGAAATAG"]
+
+def test_find_orfs_offset():
+    seq = Sequence(
+        id="seq1",
+        sequence="CATGAAATAG"
+    )
+
+    assert seq.find_orfs() == ["ATGAAATAG"]
+
+def test_find_orfs_without_stop():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGAAA"
+    )
+
+    assert seq.find_orfs() == []
+
+def test_find_orfs_immediate_stop():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGTAA"
+    )
+
+    assert seq.find_orfs() == ["ATGTAA"]
+
+def test_find_multiple_orfs():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGAAATAGCCCATGTTTTAA"
+    )
+
+    assert seq.find_orfs() == [
+        "ATGAAATAG",
+        "ATGTTTTAA"
+    ]
+
+def test_find_orfs_ignores_out_of_frame_stop():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGAAATTA"
+    )
+
+    assert seq.find_orfs() == []
+
+def test_find_orfs_frame_two():
+    seq = Sequence(
+        id="seq1",
+        sequence="CCATGAAATAG"
+    )
+
+    assert seq.find_orfs() == ["ATGAAATAG"]

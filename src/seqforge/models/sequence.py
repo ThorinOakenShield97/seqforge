@@ -155,3 +155,20 @@ class Sequence:
 
         return positions
 
+    def find_orfs(self):
+        results = []
+        sequence = self.sequence.upper()
+        for i in range(len(sequence)):
+            triplet = sequence[i:i+3]
+            if triplet == 'ATG':
+                orf = ''
+                orf += triplet
+                for j in range(i+3,len(sequence),3):
+                    triplet = sequence[j:j+3]
+                    if triplet in CODON_TABLE:
+                        if CODON_TABLE[triplet] == '*':
+                            orf += triplet
+                            results.append(orf)
+                            break
+                        orf += triplet
+        return results
