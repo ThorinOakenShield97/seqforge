@@ -18,3 +18,18 @@ class Sequence:
         gc_count = g_count + c_count
 
         return gc_count/total * 100
+
+    def reverse_complement(self):
+        reverse = self.sequence[::-1]
+        rev_compl = ''
+        for letter in reverse:
+            if letter in 'Aa':
+                rev_compl += 'T'
+            elif letter in 'Cc':
+                rev_compl += 'G'
+            elif letter in 'Gg':
+                rev_compl += 'C'
+            elif letter in 'Tt':
+                rev_compl += 'A'
+
+        return rev_compl

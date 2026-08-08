@@ -19,3 +19,20 @@ def test_gc_content_empty_seq():
 
     with pytest.raises(ValueError):
         seq.gc_content()
+
+def test_reverse_complement():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC"
+    )
+
+    assert seq.reverse_complement() == "GCAT"
+    
+
+def test_reverse_complement_lowercase():
+    seq = Sequence(
+        id="seq1",
+        sequence="atgc"
+    )
+
+    assert seq.reverse_complement() == "GCAT"
