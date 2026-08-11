@@ -330,3 +330,48 @@ def test_find_orfs_frame_two():
     )
 
     assert seq.find_orfs() == ["ATGAAATAG"]
+
+def test_find_orfs_with_iupac():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGGCNTAA"
+    )
+
+    assert seq.find_orfs() == ["ATGGCNTAA"]
+
+def test_find_orfs_ambiguous_possible_stop():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGTANTAA"
+    )
+
+    assert seq.find_orfs() == ["ATGTANTAA"]
+
+def test_find_orfs_iupac_stop():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGTAR"
+    )
+
+    assert seq.find_orfs() == ["ATGTAR"]
+
+def test_find_orfs_iupac_possible_stop():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGTGRTAA"
+    )
+
+    assert seq.find_orfs() == ["ATGTGRTAA"]
+
+def test_find_overlapping_orfs():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGATGTAA"
+    )
+
+    assert seq.find_orfs() == [
+        "ATGATGTAA",
+        "ATGTAA"
+    ]
+def test_expand_iupac_unambiguous():
+    assert expand_iupac("ATG") == ["ATG"]

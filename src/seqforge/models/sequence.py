@@ -163,10 +163,17 @@ class Sequence:
             if triplet == 'ATG':
                 orf = ''
                 orf += triplet
-                for j in range(i+3,len(sequence),3):
+                for j in range(i+3,len(sequence)-2,3):
                     triplet = sequence[j:j+3]
                     if triplet in CODON_TABLE:
                         if CODON_TABLE[triplet] == '*':
+                            orf += triplet
+                            results.append(orf)
+                            break
+                        orf += triplet
+                    elif all(letter in IUPAC_BASES for letter in triplet):
+                        possibilities = expand_iupac(triplet)
+                        if all(CODON_TABLE[triplet] == '*' for triplet in possibilities):
                             orf += triplet
                             results.append(orf)
                             break
