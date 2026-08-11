@@ -375,3 +375,40 @@ def test_find_overlapping_orfs():
     ]
 def test_expand_iupac_unambiguous():
     assert expand_iupac("ATG") == ["ATG"]
+
+def test_find_orfs_reverse_strand():
+    seq = Sequence(
+        id="seq1",
+        sequence="TTACAT"
+    )
+
+    assert seq.find_orfs(strand="reverse") == ["ATGTAA"]
+
+
+def test_find_orfs_invalid_strand():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGTAA"
+    )
+
+    with pytest.raises(ValueError):
+        seq.find_orfs(strand="banana")
+
+def test_find_orfs_both_strands():
+    seq = Sequence(
+        id="seq1",
+        sequence="TTACAT"
+    )
+
+    assert seq.find_orfs(strand="both") == ["ATGTAA"]
+
+def test_find_orfs_both_strands_returns_forward_then_reverse():
+    seq = Sequence(
+        id="seq1",
+        sequence="TTACATGTAG"
+    )
+
+    assert seq.find_orfs(strand="both") == [
+        "ATGTAG",
+        "ATGTAA"
+    ]

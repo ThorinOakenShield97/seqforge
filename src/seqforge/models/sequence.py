@@ -155,9 +155,16 @@ class Sequence:
 
         return positions
 
-    def find_orfs(self):
+    def find_orfs(self,strand="forward"):
         results = []
-        sequence = self.sequence.upper()
+        if strand == 'both':
+            return self.find_orfs('forward') + self.find_orfs('reverse')
+        if strand == "forward":
+            sequence = self.sequence.upper()
+        elif strand == "reverse":
+            sequence = self.reverse_complement()
+        else:
+            raise ValueError('Invalid Strand')
         for i in range(len(sequence)):
             triplet = sequence[i:i+3]
             if triplet == 'ATG':
