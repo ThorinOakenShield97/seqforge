@@ -197,6 +197,24 @@ class Sequence:
         return positions
 
     def find_orfs(self,strand="forward") -> list[str]:
+        """Return open reading frames found in the selected DNA strand.
+
+        Searches all reading frames for ORFs beginning with ATG and ending
+        at a stop codon. IUPAC-ambiguous codons are supported and are
+        considered stop codons only when all possible expansions are stops.
+
+        Args:
+            strand: Strand to search: ``"forward"``, ``"reverse"``, or
+                ``"both"``. ``"both"`` returns forward ORFs followed by
+                reverse ORFs.
+
+        Returns:
+            A list of complete ORF nucleotide sequences, including their
+            start and stop codons.
+
+        Raises:
+            ValueError: If ``strand`` is not a supported value.
+        """
         results = []
         if strand == 'both':
             return self.find_orfs('forward') + self.find_orfs('reverse')
