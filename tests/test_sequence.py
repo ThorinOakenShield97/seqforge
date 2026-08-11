@@ -412,3 +412,22 @@ def test_find_orfs_both_strands_returns_forward_then_reverse():
         "ATGTAG",
         "ATGTAA"
     ]
+
+def test_expand_iupac_rejects_empty_codon():
+    with pytest.raises(ValueError):
+        expand_iupac("")
+
+def test_expand_iupac_rejects_incomplete_codon():
+    with pytest.raises(ValueError):
+        expand_iupac("AT")
+
+def test_expand_iupac_rejects_long_codon():
+    with pytest.raises(ValueError):
+        expand_iupac("ATGG")
+
+def test_expand_iupac_rejects_invalid_base():
+    with pytest.raises(ValueError):
+        expand_iupac("TXR")
+
+def test_expand_iupac_accepts_lowercase():
+    assert expand_iupac("tar") == ["TAA", "TAG"]

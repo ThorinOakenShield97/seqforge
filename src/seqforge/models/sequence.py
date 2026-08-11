@@ -59,6 +59,14 @@ IUPAC_BASES = {
 }
 
 def expand_iupac(codon):
+    codon = codon.upper()
+    if len(codon) == 3:
+        for letter in codon:
+            if letter not in IUPAC_BASES:
+                raise ValueError('Letter not in IUPAC_BASES')
+    else:
+        raise ValueError('Incorrect number of letters')
+
     possibilities = [IUPAC_BASES[letter] for letter in codon]
     return [''.join(combination) for combination in product(*possibilities)]
 
