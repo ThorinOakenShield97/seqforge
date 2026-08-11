@@ -58,7 +58,7 @@ IUPAC_BASES = {
     'N': ['A', 'C', 'G', 'T'],
 }
 
-def expand_iupac(codon):
+def expand_iupac(codon) -> list[str]:
     codon = codon.upper()
     if len(codon) == 3:
         for letter in codon:
@@ -75,10 +75,14 @@ class Sequence:
     id: str
     sequence: str
 
-    def length(self):
+    def length(self) -> int:
+        """Return the length of the sequence."""
         return len(self.sequence)
 
-    def gc_content(self):
+    def gc_content(self) -> float:
+        """Return the GC content of the sequence as a percentage.
+        Raises:
+            ValueError: If the sequence is empty."""
         if not self.sequence:
             raise ValueError('Cannot calculate GC content of an empty sequence.')
         total = len(self.sequence)
@@ -89,7 +93,8 @@ class Sequence:
 
         return gc_count/total * 100
 
-    def base_counts(self):
+    def base_counts(self) -> dict[str, int]:
+        """Return the count of each symbol in the sequence, normalized to uppercase."""
         sequence = self.sequence.upper()
         counts = {}
         for letter in sequence:
@@ -99,7 +104,12 @@ class Sequence:
                 counts[letter] = 1
         return counts
 
-    def base_frequencies(self):
+    def base_frequencies(self) -> dict[str, float]:
+        """Return the frequency of each symbol in the sequence as a percentage.
+
+            Raises:
+                ValueError: If the sequence is empty.
+        """
         counts = self.base_counts()
         total = len(self.sequence)
 
@@ -111,7 +121,12 @@ class Sequence:
             frequencies[base] = counts[base]/total * 100
         return frequencies
 
-    def reverse_complement(self):
+    def reverse_complement(self) -> str:
+        """Return the reverse complement of the DNA sequence.
+
+            Raises:
+                ValueError: If the sequence contains an unsupported DNA base.
+        """
         reverse = self.sequence[::-1]
         rev_compl = ''
         for letter in reverse:
@@ -122,11 +137,22 @@ class Sequence:
 
         return rev_compl
 
-    def transcribe(self):
+    def transcribe(self) -> str:
+        """Return the RNA transcript of the DNA sequence."""
         return self.sequence.upper().replace('T', 'U')
 
 
-    def translate(self):
+    def translate(self) -> str:
+        """Translate the sequence from the first start codon to the first stop codon.
+
+        IUPAC-ambiguous codons are translated when all possible expansions
+        produce the same amino acid. Ambiguous codons producing different
+        results are represented by ``X``.
+
+        Returns:
+            The translated protein sequence, or an empty string if no start
+            codon is found.
+        """
         sequence = self.sequence.upper()
         start = sequence.find('ATG')
 
@@ -143,6 +169,8 @@ class Sequence:
                     possibilities = expand_iupac(triplet)
                     aminoacids = [CODON_TABLE[codon] for codon in possibilities]
                     if len(set(aminoacids)) == 1:
+                        if aminoacids[0] == '*':
+                            break
                         protein += aminoacids[0]
                     else:
                         protein += 'X'
@@ -151,7 +179,12 @@ class Sequence:
                 
         return protein
 
-    def find_motif(self,motif):
+    def find_motif(self,motif) -> list[int]:
+        """Return the starting positions of all occurrences of a motif.
+        The search is case-insensitive and includes overlapping matches.
+        Raises:
+            ValueError: If the motif is empty.
+        """
         positions = []
         sequence = self.sequence.upper()
         motif = motif.upper()
@@ -163,7 +196,7 @@ class Sequence:
 
         return positions
 
-    def find_orfs(self,strand="forward"):
+    def find_orfs(self,strand="forward") -> list[str]:
         results = []
         if strand == 'both':
             return self.find_orfs('forward') + self.find_orfs('reverse')

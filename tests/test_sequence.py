@@ -431,3 +431,35 @@ def test_expand_iupac_rejects_invalid_base():
 
 def test_expand_iupac_accepts_lowercase():
     assert expand_iupac("tar") == ["TAA", "TAG"]
+
+def test_translate_unambiguous_iupac_codon():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGGCNTAA"
+    )
+
+    assert seq.translate() == "MA"
+
+def test_translate_ambiguous_iupac_codon():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGTANTAA"
+    )
+
+    assert seq.translate() == "MX"
+
+def test_translate_ambiguous_stop_codon():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGTARCCC"
+    )
+
+    assert seq.translate() == "M"
+
+def test_translate_without_start_returns_empty_string():
+    seq = Sequence(
+        id="seq1",
+        sequence="CCCGGGTTT"
+    )
+
+    assert seq.translate() == ""
