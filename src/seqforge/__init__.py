@@ -1,0 +1,1 @@
+from seqforge.models.sequence import Sequence, expand_iupac

@@ -2,6 +2,21 @@ import pytest
 
 from seqforge.models.sequence import Sequence, expand_iupac
 
+def test_sequence_is_public_api():
+    from seqforge import Sequence
+
+    assert Sequence is not None
+
+def test_expand_iupac_is_public_api():
+    from seqforge import expand_iupac
+
+    assert expand_iupac("GCN") == [
+        "GCA",
+        "GCC",
+        "GCG",
+        "GCT",
+    ]
+
 
 def test_seq_length():
     seq = Sequence(
