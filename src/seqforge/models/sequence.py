@@ -142,19 +142,42 @@ class Sequence:
         return self.sequence.upper().replace('T', 'U')
 
 
-    def translate(self) -> str:
-        """Translate the sequence from the first start codon to the first stop codon.
+    def translate(self, frame: int | None = None) -> str:     
+        """
+        Translate the sequence from the first start codon to the first stop codon.
+
+        When ``frame`` is ``None``, the first start codon in the sequence is used.
+        When ``frame`` is 0, 1, or 2, the first start codon in the selected
+        reading frame is used.
 
         IUPAC-ambiguous codons are translated when all possible expansions
         produce the same amino acid. Ambiguous codons producing different
         results are represented by ``X``.
 
+        Args:
+            frame: Reading frame to search for a start codon, or ``None`` to
+            search the entire sequence.
+
         Returns:
             The translated protein sequence, or an empty string if no start
             codon is found.
-        """
+
+        Raises:
+            ValueError: If ``frame`` is not ``None``, 0, 1, or 2.
+         """
+        
         sequence = self.sequence.upper()
-        start = sequence.find('ATG')
+        if frame is None:
+            start = sequence.find('ATG')
+
+        else:
+            if frame > 2 or frame < 0:
+                raise ValueError('Invalid Frame')
+            start = -1
+            for i in range(frame,len(sequence)-2,3):
+                if sequence[i:i+3] =='ATG':
+                    start = i
+                    break
 
         if start != -1:
             protein = ''
@@ -196,25 +219,33 @@ class Sequence:
 
         return positions
 
-    def find_orfs(self,strand="forward") -> list[str]:
+    def find_orfs(self, strand: str = "forward", frame: int | None = None,) -> list[str]:
         """Return open reading frames found in the selected DNA strand.
 
-        Searches all reading frames for ORFs beginning with ATG and ending
-        at a stop codon. IUPAC-ambiguous codons are supported and are
-        considered stop codons only when all possible expansions are stops.
+        Searches for complete ORFs beginning with ``ATG`` and ending at a
+        compatible stop codon. When ``frame`` is ``None``, all reading frames
+        are searched. When ``frame`` is 0, 1, or 2, the search is restricted
+        to that reading frame.
+
+        IUPAC-ambiguous codons are supported and are considered stop codons
+        only when all possible expansions are stop codons.
 
         Args:
             strand: Strand to search: ``"forward"``, ``"reverse"``, or
                 ``"both"``. ``"both"`` returns forward ORFs followed by
                 reverse ORFs.
+            frame: Reading frame to search, or ``None`` to search all frames.
+                The selected frame is applied independently to each strand.
 
         Returns:
             A list of complete ORF nucleotide sequences, including their
             start and stop codons.
 
         Raises:
-            ValueError: If ``strand`` is not a supported value.
+            ValueError: If ``strand`` is not ``"forward"``, ``"reverse"``,
+                or ``"both"``, or if ``frame`` is not ``None``, 0, 1, or 2.
         """
+
         results = []
         if strand == 'both':
             return self.find_orfs('forward') + self.find_orfs('reverse')
@@ -224,7 +255,16 @@ class Sequence:
             sequence = self.reverse_complement()
         else:
             raise ValueError('Invalid Strand')
-        for i in range(len(sequence)):
+
+
+        if frame is None:
+            positions = range(len(sequence))
+        elif 0 <= frame <= 2:
+            positions = range(frame,len(sequence),3)
+        else:
+            raise ValueError('Invalid Frame')
+
+        for i in positions:
             triplet = sequence[i:i+3]
             if triplet == 'ATG':
                 orf = ''

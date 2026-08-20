@@ -478,3 +478,98 @@ def test_translate_without_start_returns_empty_string():
     )
 
     assert seq.translate() == ""
+
+def test_translate_frame_one():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGAAATAG"
+    )
+
+    assert seq.translate(frame=1) == "MK"
+
+def test_translate_without_frame_keeps_current_behavior():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGAAATAG"
+    )
+
+    assert seq.translate() == "MK"
+
+def test_translate_rejects_invalid_frame():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGAAATAG"
+    )
+
+    with pytest.raises(ValueError):
+        seq.translate(frame=3)
+
+def test_translate_frame_two():
+    seq = Sequence(
+        id="seq1",
+        sequence="CCATGAAATAG"
+    )
+
+    assert seq.translate(frame=2) == "MK"
+
+def test_translate_frame_without_start_returns_empty_string():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGAAATAG"
+    )
+
+    assert seq.translate(frame=0) == ""
+
+def test_translate_none_frame_keeps_current_behavior():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGAAATAG"
+    )
+
+    assert seq.translate(frame=None) == "MK"
+
+def test_translate_uses_first_start_codon_in_frame():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGAAATGCCCTAG"
+    )
+
+    assert seq.translate(frame=1) == "MKCP"
+
+def test_find_orfs_frame_zero_without_start():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGAAATAG"
+    )
+
+    assert seq.find_orfs(frame=0) == []
+
+def test_find_orfs_frame_one():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGAAATAG"
+    )
+
+    assert seq.find_orfs(frame=1) == ["ATGAAATAG"]
+
+def test_find_orfs_both_strands_with_frame():
+    seq = Sequence(
+        id="seq1",
+        sequence="AATGTAATTACATA"
+    )
+
+    assert seq.find_orfs(strand="both", frame=1) == [
+        "ATGTAA",
+        "ATGTAA"
+    ]
+
+def test_find_orfs_both_strands_with_frame_returns_distinct_orfs():
+    seq = Sequence(
+        id="seq1",
+        sequence="CGACTACATGTGA"
+    )
+
+    assert seq.find_orfs(strand="both", frame=1) == [
+        "ATGTGA",
+        "ATGTAG",
+    ]
