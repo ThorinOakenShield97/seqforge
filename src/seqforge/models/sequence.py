@@ -58,7 +58,22 @@ IUPAC_BASES = {
     'N': ['A', 'C', 'G', 'T'],
 }
 
-def expand_iupac(codon) -> list[str]:
+def expand_iupac(codon:str) -> list[str]:
+    """Return all possible DNA codon expansions for an IUPAC codon.
+
+    The codon is case-insensitive and must contain exactly three valid
+    IUPAC nucleotide symbols.
+
+    Args:
+        codon: Three-character DNA codon using IUPAC nucleotide symbols.
+
+    Returns:
+        A list containing all possible unambiguous DNA codons.
+
+    Raises:
+        ValueError: If the codon does not contain exactly three characters
+            or contains an unsupported IUPAC symbol.
+    """
     codon = codon.upper()
     if len(codon) == 3:
         for letter in codon:
@@ -81,8 +96,10 @@ class Sequence:
 
     def gc_content(self) -> float:
         """Return the GC content of the sequence as a percentage.
+
         Raises:
-            ValueError: If the sequence is empty."""
+            ValueError: If the sequence is empty.
+        """
         if not self.sequence:
             raise ValueError('Cannot calculate GC content of an empty sequence.')
         total = len(self.sequence)
@@ -202,9 +219,11 @@ class Sequence:
                 
         return protein
 
-    def find_motif(self,motif) -> list[int]:
+    def find_motif(self,motif:str) -> list[int]:
         """Return the starting positions of all occurrences of a motif.
+        
         The search is case-insensitive and includes overlapping matches.
+        
         Raises:
             ValueError: If the motif is empty.
         """
@@ -219,7 +238,7 @@ class Sequence:
 
         return positions
 
-    def find_orfs(self, strand: str = "forward", frame: int | None = None,) -> list[str]:
+    def find_orfs(self, strand: str = "forward", frame: int | None = None) -> list[str]:
         """Return open reading frames found in the selected DNA strand.
 
         Searches for complete ORFs beginning with ``ATG`` and ending at a
