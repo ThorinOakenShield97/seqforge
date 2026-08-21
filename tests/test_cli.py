@@ -33,3 +33,30 @@ def test_gc_command_rejects_empty_sequence():
 
     assert result.exit_code != 0
     assert "Cannot calculate GC content of an empty sequence." in result.output
+
+def test_translate_command():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["translate", "ATGAAATAG"])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "Protein: MK"
+
+def test_translate_command_without_start_codon():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["translate", "CCCGGG"])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "No start codon found."
+
+def test_translate_command_with_frame():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["translate", "AATGAAATAG", "--frame", "1"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "Protein: MK"
