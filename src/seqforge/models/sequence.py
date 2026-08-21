@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from itertools import product
+from enum import Enum
 
 
 DNA_COMPLEMENTS = {
@@ -84,6 +85,31 @@ def expand_iupac(codon:str) -> list[str]:
 
     possibilities = [IUPAC_BASES[letter] for letter in codon]
     return [''.join(combination) for combination in product(*possibilities)]
+
+
+class CodonResultKind(Enum):
+    AMINO_ACID = "amino_acid"
+    STOP = "stop"
+    AMBIGUOUS = "ambiguous"
+
+@dataclass
+class CodonResult:
+    kind: CodonResultKind
+    amino_acid: str | None = None
+
+def interpret_codon(codon:str) -> CodonResult:
+    results = expand_iupac(codon)
+    aminoacids = [CODON_TABLE[codon] for codon in results]
+
+    if all(aminoacid == '*' for aminoacid in aminoacids):
+        return CodonResult(kind = CodonResultKind.STOP)
+
+    if len(set(aminoacids)) == 1:
+        return CodonResult(kind = CodonResultKind.AMINO_ACID, amino_acid = aminoacids[0])
+
+    else:
+        return CodonResult(kind = CodonResultKind.AMBIGUOUS)
+
 
 @dataclass
 class Sequence:
@@ -200,20 +226,13 @@ class Sequence:
             protein = ''
             for i in range(start,len(sequence)-2,3):
                 triplet = sequence[i:i+3]
-                if triplet in CODON_TABLE:
-                    aa = CODON_TABLE[triplet]
-                    if aa == '*':
-                        break
-                    protein += aa
+                result = interpret_codon(triplet)
+                if result.kind == CodonResultKind.STOP:
+                    break
+                elif result.kind == CodonResultKind.AMINO_ACID:
+                    protein += result.amino_acid
                 else:
-                    possibilities = expand_iupac(triplet)
-                    aminoacids = [CODON_TABLE[codon] for codon in possibilities]
-                    if len(set(aminoacids)) == 1:
-                        if aminoacids[0] == '*':
-                            break
-                        protein += aminoacids[0]
-                    else:
-                        protein += 'X'
+                    protein += 'X'
         else:
             return ''
                 
@@ -290,17 +309,14 @@ class Sequence:
                 orf += triplet
                 for j in range(i+3,len(sequence)-2,3):
                     triplet = sequence[j:j+3]
-                    if triplet in CODON_TABLE:
-                        if CODON_TABLE[triplet] == '*':
-                            orf += triplet
-                            results.append(orf)
-                            break
+                    result = interpret_codon(triplet)
+                    if result.kind == CodonResultKind.AMINO_ACID:
                         orf += triplet
-                    elif all(letter in IUPAC_BASES for letter in triplet):
-                        possibilities = expand_iupac(triplet)
-                        if all(CODON_TABLE[triplet] == '*' for triplet in possibilities):
-                            orf += triplet
-                            results.append(orf)
-                            break
+                    elif result.kind == CodonResultKind.STOP:
                         orf += triplet
+                        results.append(orf)
+                        break
+                    else:
+                        orf += triplet
+
         return results

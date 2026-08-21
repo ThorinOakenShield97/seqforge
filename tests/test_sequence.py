@@ -1,6 +1,6 @@
 import pytest
 
-from seqforge.models.sequence import Sequence, expand_iupac
+from seqforge.models.sequence import (Sequence, expand_iupac, interpret_codon, CodonResultKind)
 
 def test_sequence_is_public_api():
     from seqforge import Sequence
@@ -584,3 +584,21 @@ def test_find_orfs_both_strands_respects_frame():
         "ATGTGA",
         "ATGTAG",
     ]
+
+def test_interpret_codon_returns_amino_acid_result():
+    result = interpret_codon("GCN")
+
+    assert result.kind == CodonResultKind.AMINO_ACID
+    assert result.amino_acid == "A"
+
+def test_interpret_codon_returns_stop_result():
+    result = interpret_codon("TAR")
+
+    assert result.kind == CodonResultKind.STOP
+    assert result.amino_acid is None
+
+def test_interpret_codon_returns_ambiguous_result():
+    result = interpret_codon("TAN")
+
+    assert result.kind == CodonResultKind.AMBIGUOUS
+    assert result.amino_acid is None
