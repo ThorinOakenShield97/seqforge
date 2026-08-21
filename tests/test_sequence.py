@@ -573,3 +573,14 @@ def test_find_orfs_both_strands_with_frame_returns_distinct_orfs():
         "ATGTGA",
         "ATGTAG",
     ]
+
+def test_find_orfs_both_strands_respects_frame():
+    seq = Sequence(
+        id="seq1",
+        sequence="CGACTACATGTGA"
+    )
+
+    assert seq.find_orfs(strand="both", frame=1) == [
+        "ATGTGA",
+        "ATGTAG",
+    ]

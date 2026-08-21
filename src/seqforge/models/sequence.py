@@ -248,7 +248,7 @@ class Sequence:
 
         results = []
         if strand == 'both':
-            return self.find_orfs('forward') + self.find_orfs('reverse')
+            return self.find_orfs('forward',frame=frame) + self.find_orfs('reverse',frame=frame)
         if strand == "forward":
             sequence = self.sequence.upper()
         elif strand == "reverse":
