@@ -161,3 +161,86 @@ def test_stats_command_rejects_empty_sequence():
 
     assert result.exit_code != 0
     assert "Cannot calculate statistics for an empty sequence." in result.output
+
+def test_stats_command_accepts_fasta_file(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == (
+        ">seq1\n"
+        "Length: 4\n"
+        "GC content: 50.0%\n"
+        "Base counts:\n"
+        "A: 1\n"
+        "C: 1\n"
+        "G: 1\n"
+        "T: 1\n"
+        "Base frequencies:\n"
+        "A: 25.0%\n"
+        "C: 25.0%\n"
+        "G: 25.0%\n"
+        "T: 25.0%"
+    )
+
+def test_stats_command_accepts_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGC\n"
+        ">seq2\n"
+        "AATT\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == (
+        ">seq1\n"
+        "Length: 4\n"
+        "GC content: 50.0%\n"
+        "Base counts:\n"
+        "A: 1\n"
+        "C: 1\n"
+        "G: 1\n"
+        "T: 1\n"
+        "Base frequencies:\n"
+        "A: 25.0%\n"
+        "C: 25.0%\n"
+        "G: 25.0%\n"
+        "T: 25.0%\n"
+        ">seq2\n"
+        "Length: 4\n"
+        "GC content: 0.0%\n"
+        "Base counts:\n"
+        "A: 2\n"
+        "T: 2\n"
+        "Base frequencies:\n"
+        "A: 50.0%\n"
+        "T: 50.0%"
+    )
+
+def test_stats_command_rejects_missing_input_file():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["stats", "does-not-exist.fasta"],
+    )
+
+    assert result.exit_code != 0
+    assert "Input file not found: does-not-exist.fasta" in result.output
+
+def test_stats_command_rejects_invalid_fasta(tmp_path):
+    fasta = tmp_path / "invalid.fasta"
+    fasta.write_text("ATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fasta)])
+
+    assert result.exit_code != 0
+    assert "Missing FASTA header." in result.output
