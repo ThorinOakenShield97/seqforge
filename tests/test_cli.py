@@ -129,3 +129,35 @@ def test_orf_command_rejects_invalid_frame():
 
     assert result.exit_code != 0
     assert "Invalid Frame" in result.output
+
+def test_stats_command():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["stats", "ATGC"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == (
+        "Length: 4\n"
+        "GC content: 50.0%\n"
+        "Base counts:\n"
+        "A: 1\n"
+        "C: 1\n"
+        "G: 1\n"
+        "T: 1\n"
+        "Base frequencies:\n"
+        "A: 25.0%\n"
+        "C: 25.0%\n"
+        "G: 25.0%\n"
+        "T: 25.0%"
+    )
+
+def test_stats_command_rejects_empty_sequence():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["stats", ""])
+
+    assert result.exit_code != 0
+    assert "Cannot calculate statistics for an empty sequence." in result.output
