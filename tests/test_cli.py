@@ -1,6 +1,12 @@
+import pytest
+
 from typer.testing import CliRunner
 from seqforge.cli import app
 from importlib.metadata import version
+from seqforge.commands.input import resolve_input
+from seqforge.exceptions import InvalidFastaError
+from seqforge.commands.input import (InputSource, resolve_input)
+
 
 def test_version_command():
     runner = CliRunner()
@@ -244,3 +250,33 @@ def test_stats_command_rejects_invalid_fasta(tmp_path):
 
     assert result.exit_code != 0
     assert "Missing FASTA header." in result.output
+
+def test_resolve_input_accepts_literal_sequence():
+    resolved = resolve_input("ATGC")
+
+    assert resolved.source == InputSource.LITERAL
+    assert len(resolved.sequences) == 1
+    assert resolved.sequences[0].id == "cli"
+    assert resolved.sequences[0].sequence == "ATGC"
+
+def test_resolve_input_reads_fasta(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGC\n")
+
+    resolved = resolve_input(str(fasta))
+
+    assert resolved.source == InputSource.FASTA
+    assert len(resolved.sequences) == 1
+    assert resolved.sequences[0].id == "seq1"
+    assert resolved.sequences[0].sequence == "ATGC"
+
+def test_resolve_input_rejects_missing_fasta_file():
+    with pytest.raises(FileNotFoundError, match="Input file not found: missing.fasta"):
+        resolve_input("missing.fasta")
+
+def test_resolve_input_rejects_invalid_fasta(tmp_path):
+    fasta = tmp_path / "invalid.fasta"
+    fasta.write_text("ATGC\n")
+
+    with pytest.raises(InvalidFastaError):
+        resolve_input(str(fasta))
