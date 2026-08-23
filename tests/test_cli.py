@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
-from seqforge.commands.version import app
 from seqforge.cli import app
+from importlib.metadata import version
 
 def test_version_command():
     runner = CliRunner()
@@ -8,9 +8,6 @@ def test_version_command():
     result = runner.invoke(app, ["version"])
 
     assert result.exit_code == 0
-
-from importlib.metadata import version
-
 
 
 def test_version_command_shows_package_version():
@@ -121,16 +118,6 @@ def test_orf_command_with_both_strands_and_frame():
         "ATGTGA",
         "ATGTAG",
     ]
-
-def test_orf_command_rejects_invalid_frame():
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        ["orf", "ATGAAATAG", "--frame", "3"],
-    )
-
-    assert result.exit_code != 0
 
 def test_orf_command_rejects_invalid_frame():
     runner = CliRunner()
