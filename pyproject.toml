@@ -1,6 +1,6 @@
 [project]
 name = "seqforge"
-version = "0.1.0"
+version = "0.2.0"
 description = "A modern Python toolkit for biological sequence analysis."
 readme = "README.md"
 license = "MIT"
