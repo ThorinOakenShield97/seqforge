@@ -434,3 +434,55 @@ def test_orf_command_with_both_strands_without_reverse_orf():
         "Reverse:",
         "No ORFs found.",
     ]
+
+def test_gc_command_rejects_invalid_fasta(tmp_path):
+    fasta = tmp_path / "invalid.fasta"
+    fasta.write_text("ATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["gc", str(fasta)])
+
+    assert result.exit_code != 0
+    assert "Missing FASTA header." in result.output
+
+def test_translate_command_rejects_invalid_fasta(tmp_path):
+    fasta = tmp_path / "invalid.fasta"
+    fasta.write_text("ATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["translate", str(fasta)])
+
+    assert result.exit_code != 0
+    assert "Missing FASTA header." in result.output
+
+def test_translate_command_rejects_missing_input_file():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["translate", "missing.fasta"],
+    )
+
+    assert result.exit_code != 0
+    assert "Input file not found: missing.fasta" in result.output
+
+def test_orf_command_rejects_invalid_fasta(tmp_path):
+    fasta = tmp_path / "invalid.fasta"
+    fasta.write_text("ATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["orf", str(fasta)])
+
+    assert result.exit_code != 0
+    assert "Missing FASTA header." in result.output
+
+def test_orf_command_rejects_missing_input_file():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["orf", "missing.fasta"],
+    )
+
+    assert result.exit_code != 0
+    assert "Input file not found: missing.fasta" in result.output

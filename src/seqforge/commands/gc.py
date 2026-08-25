@@ -2,6 +2,7 @@ import typer
 
 from seqforge.models.sequence import Sequence
 from seqforge.commands.input import InputSource, resolve_input
+from seqforge.exceptions import InvalidFastaError
 
 
 def gc(sequence: str) -> None:
@@ -20,4 +21,7 @@ def gc(sequence: str) -> None:
         raise typer.Exit(code=1)
     except FileNotFoundError as e:
         typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+    except InvalidFastaError as i:
+        typer.echo(f"Error: {i}", err=True)
         raise typer.Exit(code=1)
