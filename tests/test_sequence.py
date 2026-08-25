@@ -602,3 +602,46 @@ def test_interpret_codon_returns_ambiguous_result():
 
     assert result.kind == CodonResultKind.AMBIGUOUS
     assert result.amino_acid is None
+
+def test_transcribe_template_strand():
+    seq = Sequence(
+        id="seq1",
+        sequence="GCAT",
+    )
+
+    assert seq.transcribe(strand="template") == "AUGC"
+
+def test_transcribe_default_uses_coding_strand():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    assert seq.transcribe() == seq.transcribe(strand="coding")
+
+def test_transcribe_rejects_invalid_strand():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    with pytest.raises(ValueError):
+        seq.transcribe(strand="reverse")
+
+def test_transcribe_template_strand_is_case_insensitive():
+    seq = Sequence(
+        id="seq1",
+        sequence="gcat",
+    )
+
+    assert seq.transcribe(strand="template") == "AUGC"
+
+def test_transcribe_template_matches_reverse_complement_transcription():
+    seq = Sequence(
+        id="seq1",
+        sequence="GCAT",
+    )
+
+    assert seq.transcribe(strand="template") == (
+        seq.reverse_complement().replace("T", "U")
+    )

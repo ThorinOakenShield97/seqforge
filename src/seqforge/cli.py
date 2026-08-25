@@ -5,6 +5,9 @@ from seqforge.commands.gc import gc
 from seqforge.commands.translate import translate
 from seqforge.commands.orf import orf
 from seqforge.commands.stats import stats
+from seqforge.commands.transcribe import transcribe
+
+
 
 
 app = typer.Typer(
@@ -26,3 +29,5 @@ app.command("orf")(orf)
 app.command("version")(version)
 
 app.command("stats")(stats)
+
+app.command("transcribe")(transcribe)

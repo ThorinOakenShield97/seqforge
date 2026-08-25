@@ -486,3 +486,145 @@ def test_orf_command_rejects_missing_input_file():
 
     assert result.exit_code != 0
     assert "Input file not found: missing.fasta" in result.output
+
+def test_transcribe_command():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["transcribe", "ATGC"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "AUGC"
+
+def test_transcribe_command_with_template_strand():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["transcribe", "GCAT", "--strand", "template"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "AUGC"
+
+def test_transcribe_command_accepts_fasta_with_template_strand(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nGCAT\n")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fasta), "--strand", "template"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "AUGC",
+    ]
+def test_transcribe_command_accepts_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGC\n"
+        ">seq2\n"
+        "GCAT\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["transcribe", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "AUGC",
+        ">seq2",
+        "GCAU",
+    ]
+
+def test_transcribe_command_rejects_invalid_fasta(tmp_path):
+    fasta = tmp_path / "invalid.fasta"
+    fasta.write_text("ATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["transcribe", str(fasta)])
+
+    assert result.exit_code != 0
+    assert "Missing FASTA header." in result.output
+
+def test_transcribe_command_rejects_missing_input_file():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["transcribe", "missing.fasta"],
+    )
+
+    assert result.exit_code != 0
+    assert "Input file not found: missing.fasta" in result.output
+
+def test_transcribe_command_with_both_strands():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["transcribe", "ATGC", "--strand", "both"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "Coding:",
+        "AUGC",
+        "Template:",
+        "GCAU",
+    ]
+
+def test_transcribe_command_with_both_strands_fasta(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fasta), "--strand", "both"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "Coding:",
+        "AUGC",
+        "Template:",
+        "GCAU",
+    ]
+
+def test_transcribe_command_with_both_strands_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGC\n"
+        ">seq2\n"
+        "GCAT\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fasta), "--strand", "both"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "Coding:",
+        "AUGC",
+        "Template:",
+        "GCAU",
+        ">seq2",
+        "Coding:",
+        "GCAU",
+        "Template:",
+        "AUGC",
+    ]

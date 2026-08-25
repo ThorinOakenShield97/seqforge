@@ -180,9 +180,28 @@ class Sequence:
 
         return rev_compl
 
-    def transcribe(self) -> str:
-        """Return the RNA transcript of the DNA sequence."""
-        return self.sequence.upper().replace('T', 'U')
+    def transcribe(self, strand: str = 'coding' ) -> str:
+        """Return the RNA transcript of the DNA sequence.
+
+        Args:
+            strand: DNA strand to transcribe: ``"coding"`` or ``"template"``.
+                The coding strand is transcribed directly. The template strand
+                is reverse-complemented before transcription.
+
+        Returns:
+            The RNA transcript.
+
+        Raises:
+            ValueError: If ``strand`` is not ``"coding"`` or ``"template"``.
+        """
+        if strand == 'coding':
+            sequence = self.sequence.upper()
+        elif strand == 'template':
+            sequence = self.reverse_complement()
+        else:
+            raise ValueError('Invalid Strand')
+
+        return sequence.replace('T', 'U')
 
 
     def translate(self, frame: int | None = None) -> str:     
