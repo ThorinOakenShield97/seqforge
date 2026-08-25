@@ -628,3 +628,18 @@ def test_transcribe_command_with_both_strands_multiple_fasta_records(tmp_path):
         "Template:",
         "AUGC",
     ]
+
+def test_resolve_input_reads_fastq(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    resolved = resolve_input(str(fastq))
+
+    assert resolved.source == InputSource.FASTQ
+    assert len(resolved.records) == 1
+    assert resolved.records[0].id == "read1"

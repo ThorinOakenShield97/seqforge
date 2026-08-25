@@ -3,29 +3,39 @@ from enum import Enum
 from pathlib import Path
 
 from seqforge.models.sequence import Sequence
+from seqforge.models.fastq_read import FastqRead
 from seqforge.parsers.fasta import parse_fasta
+from seqforge.parsers.fastq import parse_fastq
 
 FASTA_EXTENSIONS = {".fasta", ".fa", ".fna"}
+FASTQ_EXTENSIONS = {".fastq", ".fq"}
 
 
 class InputSource(Enum):
     LITERAL = "literal"
     FASTA = "fasta"
+    FASTQ = "fastq"
 
 @dataclass
 class ResolvedInput:
     sequences: list[Sequence]
     source: InputSource
+    records: list[Sequence | FastqRead]
 
 def resolve_input(value: str) -> ResolvedInput:
     """Resolve a literal sequence or FASTA file into Sequence objects."""
     input_path = Path(value)
 
     if input_path.is_file():
+        if input_path.suffix.lower() in FASTQ_EXTENSIONS:
+            records = parse_fastq(input_path)
+            return ResolvedInput(sequences = [], source = InputSource.FASTQ, records = records)
         # FASTA support will be added next.
-        return ResolvedInput(sequences = parse_fasta(input_path), source=InputSource.FASTA)
+        records = parse_fasta(input_path)
+        return ResolvedInput(sequences = parse_fasta(input_path), source = InputSource.FASTA, records = records)
 
     if input_path.suffix.lower() in FASTA_EXTENSIONS:
         raise FileNotFoundError(f"Input file not found: {value}")
 
-    return ResolvedInput(sequences = [Sequence(id = "cli", sequence = value)], source = InputSource.LITERAL)
+    record = Sequence(id='cli', sequence = value)
+    return ResolvedInput(sequences = [record], source = InputSource.LITERAL, records = [record])
