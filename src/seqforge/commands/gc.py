@@ -1,14 +1,23 @@
 import typer
 
 from seqforge.models.sequence import Sequence
+from seqforge.commands.input import InputSource, resolve_input
 
 
 def gc(sequence: str) -> None:
     """Display the GC content of a DNA sequence."""
     try:
-        result = Sequence(id="cli", sequence=sequence).gc_content()
-    except ValueError as exc:
-        typer.echo(f"Error: {exc}", err=True)
-        raise typer.Exit(code=1)
+        results = resolve_input(sequence)
 
-    print(f"GC content: {result}%")
+        for seq in results.sequences:
+            if results.source == InputSource.FASTA:
+                print(f">{seq.id}")
+
+            print(f"GC content: {seq.gc_content()}%")
+
+    except ValueError as v:
+        typer.echo(f"Error: {v}", err=True)
+        raise typer.Exit(code=1)
+    except FileNotFoundError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)

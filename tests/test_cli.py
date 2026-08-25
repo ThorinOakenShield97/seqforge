@@ -107,7 +107,9 @@ def test_orf_command_with_both_strands():
 
     assert result.exit_code == 0
     assert result.stdout.strip().splitlines() == [
+        "Forward:",
         "ATGTGA",
+        "Reverse:",
         "ATGTAG",
     ]
 
@@ -121,7 +123,9 @@ def test_orf_command_with_both_strands_and_frame():
 
     assert result.exit_code == 0
     assert result.stdout.strip().splitlines() == [
+        "Forward:",
         "ATGTGA",
+        "Reverse:",
         "ATGTAG",
     ]
 
@@ -280,3 +284,153 @@ def test_resolve_input_rejects_invalid_fasta(tmp_path):
 
     with pytest.raises(InvalidFastaError):
         resolve_input(str(fasta))
+
+def test_gc_command_accepts_fasta_file(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["gc", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == (
+        ">seq1\n"
+        "GC content: 50.0%"
+    )
+
+def test_gc_command_accepts_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGC\n"
+        ">seq2\n"
+        "AATT\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["gc", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "GC content: 50.0%",
+        ">seq2",
+        "GC content: 0.0%",
+    ]
+def test_translate_command_accepts_fasta_file(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">gene1\nATGAAATAG\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["translate", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == (
+        ">gene1\n"
+        "Protein: MK"
+    )
+
+def test_translate_command_accepts_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">gene1\n"
+        "ATGAAATAG\n"
+        ">gene2\n"
+        "ATGCCCTAA\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["translate", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">gene1",
+        "Protein: MK",
+        ">gene2",
+        "Protein: MP",
+    ]
+
+def test_translate_command_handles_missing_start_in_fasta(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">gene1\n"
+        "ATGAAATAG\n"
+        ">gene2\n"
+        "CCCGGG\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["translate", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">gene1",
+        "Protein: MK",
+        ">gene2",
+        "No start codon found.",
+    ]
+
+def test_orf_command_accepts_fasta_file(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGAAATAG\n")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["orf", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == (
+        ">seq1\n"
+        "ATGAAATAG"
+    )
+
+def test_orf_command_accepts_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGAAATAG\n"
+        ">seq2\n"
+        "ATGCCCTAA\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["orf", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "ATGAAATAG",
+        ">seq2",
+        "ATGCCCTAA",
+    ]
+
+def test_orf_command_with_both_strands_labels_results():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["orf", "CGACTACATGTGA", "--strand", "both", "--frame", "1"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "Forward:",
+        "ATGTGA",
+        "Reverse:",
+        "ATGTAG",
+    ]
+
+def test_orf_command_with_both_strands_without_reverse_orf():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["orf", "AATGTAAAA", "--strand", "both", "--frame", "1"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "Forward:",
+        "ATGTAA",
+        "Reverse:",
+        "No ORFs found.",
+    ]
