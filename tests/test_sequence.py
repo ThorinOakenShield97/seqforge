@@ -485,7 +485,7 @@ def test_translate_frame_one():
         sequence="AATGAAATAG"
     )
 
-    assert seq.translate(frame=1) == "MK"
+    assert seq.translate(frame=2) == "MK"
 
 def test_translate_without_frame_keeps_current_behavior():
     seq = Sequence(
@@ -502,7 +502,7 @@ def test_translate_rejects_invalid_frame():
     )
 
     with pytest.raises(ValueError):
-        seq.translate(frame=3)
+        seq.translate(frame=0)
 
 def test_translate_frame_two():
     seq = Sequence(
@@ -510,7 +510,7 @@ def test_translate_frame_two():
         sequence="CCATGAAATAG"
     )
 
-    assert seq.translate(frame=2) == "MK"
+    assert seq.translate(frame=3) == "MK"
 
 def test_translate_frame_without_start_returns_empty_string():
     seq = Sequence(
@@ -518,7 +518,7 @@ def test_translate_frame_without_start_returns_empty_string():
         sequence="AATGAAATAG"
     )
 
-    assert seq.translate(frame=0) == ""
+    assert seq.translate(frame=1) == ""
 
 def test_translate_none_frame_keeps_current_behavior():
     seq = Sequence(
@@ -534,7 +534,7 @@ def test_translate_uses_first_start_codon_in_frame():
         sequence="AATGAAATGCCCTAG"
     )
 
-    assert seq.translate(frame=1) == "MKCP"
+    assert seq.translate(frame=2) == "MKCP"
 
 def test_find_orfs_frame_zero_without_start():
     seq = Sequence(
@@ -542,7 +542,7 @@ def test_find_orfs_frame_zero_without_start():
         sequence="AATGAAATAG"
     )
 
-    assert seq.find_orfs(frame=0) == []
+    assert seq.find_orfs(frame=1) == []
 
 def test_find_orfs_frame_one():
     seq = Sequence(
@@ -550,7 +550,7 @@ def test_find_orfs_frame_one():
         sequence="AATGAAATAG"
     )
 
-    assert seq.find_orfs(frame=1) == ["ATGAAATAG"]
+    assert seq.find_orfs(frame=2) == ["ATGAAATAG"]
 
 def test_find_orfs_both_strands_with_frame():
     seq = Sequence(
@@ -558,7 +558,7 @@ def test_find_orfs_both_strands_with_frame():
         sequence="AATGTAATTACATA"
     )
 
-    assert seq.find_orfs(strand="both", frame=1) == [
+    assert seq.find_orfs(strand="both", frame=2) == [
         "ATGTAA",
         "ATGTAA"
     ]
@@ -569,7 +569,7 @@ def test_find_orfs_both_strands_with_frame_returns_distinct_orfs():
         sequence="CGACTACATGTGA"
     )
 
-    assert seq.find_orfs(strand="both", frame=1) == [
+    assert seq.find_orfs(strand="both", frame=2) == [
         "ATGTGA",
         "ATGTAG",
     ]
@@ -580,7 +580,7 @@ def test_find_orfs_both_strands_respects_frame():
         sequence="CGACTACATGTGA"
     )
 
-    assert seq.find_orfs(strand="both", frame=1) == [
+    assert seq.find_orfs(strand="both", frame=2) == [
         "ATGTGA",
         "ATGTAG",
     ]
@@ -645,3 +645,28 @@ def test_transcribe_template_matches_reverse_complement_transcription():
     assert seq.transcribe(strand="template") == (
         seq.reverse_complement().replace("T", "U")
     )
+
+def test_translate_frame_three():
+    seq = Sequence(
+        id="seq1",
+        sequence="CCATGAAATAG",
+    )
+
+    assert seq.translate(frame=3) == "MK"
+
+def test_translate_rejects_frame_zero():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGAAATAG",
+    )
+
+    with pytest.raises(ValueError):
+        seq.translate(frame=0)
+
+def test_find_orfs_frame_three():
+    seq = Sequence(
+        id="seq1",
+        sequence="CCATGAAATAG",
+    )
+
+    assert seq.find_orfs(frame=3) == ["ATGAAATAG"]

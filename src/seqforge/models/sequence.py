@@ -209,7 +209,7 @@ class Sequence:
         Translate the sequence from the first start codon to the first stop codon.
 
         When ``frame`` is ``None``, the first start codon in the sequence is used.
-        When ``frame`` is 0, 1, or 2, the first start codon in the selected
+        When ``frame`` is 1, 2, or 3, the first start codon in the selected
         reading frame is used.
 
         IUPAC-ambiguous codons are translated when all possible expansions
@@ -225,7 +225,7 @@ class Sequence:
             codon is found.
 
         Raises:
-            ValueError: If ``frame`` is not ``None``, 0, 1, or 2.
+            ValueError: If ``frame`` is not ``None``, 1, 2, or 3.
          """
         
         sequence = self.sequence.upper()
@@ -233,10 +233,11 @@ class Sequence:
             start = sequence.find('ATG')
 
         else:
-            if frame > 2 or frame < 0:
+            if frame > 3 or frame < 1:
                 raise ValueError('Invalid Frame')
             start = -1
-            for i in range(frame,len(sequence)-2,3):
+            offset = frame - 1
+            for i in range(offset,len(sequence)-2,3):
                 if sequence[i:i+3] =='ATG':
                     start = i
                     break
@@ -316,8 +317,9 @@ class Sequence:
 
         if frame is None:
             positions = range(len(sequence))
-        elif 0 <= frame <= 2:
-            positions = range(frame,len(sequence),3)
+        elif 1 <= frame <= 3:
+            offset = frame -1 
+            positions = range(offset,len(sequence),3)
         else:
             raise ValueError('Invalid Frame')
 

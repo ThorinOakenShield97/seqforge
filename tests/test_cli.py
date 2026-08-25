@@ -58,7 +58,7 @@ def test_translate_command_with_frame():
 
     result = runner.invoke(
         app,
-        ["translate", "AATGAAATAG", "--frame", "1"],
+        ["translate", "AATGAAATAG", "--frame", "2"],
     )
 
     assert result.exit_code == 0
@@ -80,7 +80,7 @@ def test_orf_command_with_frame():
 
     result = runner.invoke(
         app,
-        ["orf", "AATGAAATAG", "--frame", "1"],
+        ["orf", "AATGAAATAG", "--frame", "2"],
     )
 
     assert result.exit_code == 0
@@ -118,7 +118,7 @@ def test_orf_command_with_both_strands_and_frame():
 
     result = runner.invoke(
         app,
-        ["orf", "CGACTACATGTGA", "--strand", "both", "--frame", "1"],
+        ["orf", "CGACTACATGTGA", "--strand", "both", "--frame", "2"],
     )
 
     assert result.exit_code == 0
@@ -134,7 +134,7 @@ def test_orf_command_rejects_invalid_frame():
 
     result = runner.invoke(
         app,
-        ["orf", "ATGAAATAG", "--frame", "3"],
+        ["orf", "ATGAAATAG", "--frame", "4"],
     )
 
     assert result.exit_code != 0
@@ -408,7 +408,7 @@ def test_orf_command_with_both_strands_labels_results():
 
     result = runner.invoke(
         app,
-        ["orf", "CGACTACATGTGA", "--strand", "both", "--frame", "1"],
+        ["orf", "CGACTACATGTGA", "--strand", "both", "--frame", "2"],
     )
 
     assert result.exit_code == 0
@@ -424,7 +424,7 @@ def test_orf_command_with_both_strands_without_reverse_orf():
 
     result = runner.invoke(
         app,
-        ["orf", "AATGTAAAA", "--strand", "both", "--frame", "1"],
+        ["orf", "AATGTAAAA", "--strand", "both", "--frame", "2"],
     )
 
     assert result.exit_code == 0
