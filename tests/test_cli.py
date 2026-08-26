@@ -643,3 +643,47 @@ def test_resolve_input_reads_fastq(tmp_path):
     assert resolved.source == InputSource.FASTQ
     assert len(resolved.records) == 1
     assert resolved.records[0].id == "read1"
+
+def test_stats_command_accepts_fastq_file(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">read1",
+        "Length: 4",
+        "GC content: 50.0%",
+        "Mean quality: 40.0",
+        "Min quality: 40",
+        "Max quality: 40",
+    ]
+
+def test_stats_command_reports_fastq_quality(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IHGF\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">read1",
+        "Length: 4",
+        "GC content: 50.0%",
+        "Mean quality: 38.5",
+        "Min quality: 37",
+        "Max quality: 40",
+    ]
