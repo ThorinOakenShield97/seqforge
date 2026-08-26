@@ -6,6 +6,7 @@ from seqforge.commands.translate import translate
 from seqforge.commands.orf import orf
 from seqforge.commands.stats import stats
 from seqforge.commands.transcribe import transcribe
+from seqforge.commands.kmer import kmer
 
 
 
@@ -31,3 +32,5 @@ app.command("version")(version)
 app.command("stats")(stats)
 
 app.command("transcribe")(transcribe)
+
+app.command("kmer")(kmer)

@@ -667,7 +667,9 @@ def test_stats_command_accepts_fastq_file(tmp_path):
         "Reads: 1",
         "Mean read length: 4.0",
         "Overall mean quality: 40.0",
-        "Mean GC content: 50.0%"
+        "Mean GC content: 50.0%",
+        "Min read length: 4",
+        "Max read length: 4"
     ]
 
 def test_stats_command_reports_fastq_quality(tmp_path):
@@ -693,7 +695,9 @@ def test_stats_command_reports_fastq_quality(tmp_path):
         "Reads: 1",
         "Mean read length: 4.0",
         "Overall mean quality: 38.5",
-        "Mean GC content: 50.0%"
+        "Mean GC content: 50.0%",
+        "Min read length: 4",
+        "Max read length: 4"
     ]
 
 def test_gc_command_accepts_fastq_file(tmp_path):
@@ -834,3 +838,229 @@ def test_kmer_command():
         "TG",
         "GC",
     ]
+
+def test_kmer_command_accepts_fasta_file(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fasta), "--k", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "AT",
+        "TG",
+        "GC",
+    ]
+
+def test_kmer_command_accepts_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGC\n"
+        ">seq2\n"
+        "AATT\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fasta), "--k", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "AT",
+        "TG",
+        "GC",
+        ">seq2",
+        "AA",
+        "AT",
+        "TT",
+    ]
+
+def test_kmer_command_with_counts():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATAT", "--k", "2", "--counts"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "AT: 2",
+        "TA: 1",
+    ]
+
+def test_kmer_command_with_counts_accepts_fasta_file(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATAT\n")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fasta), "--k", "2", "--counts"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "AT: 2",
+        "TA: 1",
+    ]
+
+def test_kmer_command_with_counts_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATAT\n"
+        ">seq2\n"
+        "AATT\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fasta), "--k", "2", "--counts"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "AT: 2",
+        "TA: 1",
+        ">seq2",
+        "AA: 1",
+        "AT: 1",
+        "TT: 1",
+    ]
+
+def test_kmer_command_accepts_fastq_file(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATAT\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fastq), "--k", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "AT",
+        "TA",
+        "AT",
+    ]
+
+def test_kmer_command_with_counts_accepts_fastq_file(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATAT\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fastq), "--k", "2", "--counts"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "AT: 2",
+        "TA: 1",
+    ]
+
+def test_kmer_command_accepts_multiple_fastq_records(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATAT\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATT\n"
+        "+\n"
+        "HHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fastq), "--k", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "AT",
+        "TA",
+        "AT",
+        "@read2",
+        "AA",
+        "AT",
+        "TT",
+    ]
+
+def test_kmer_command_rejects_non_positive_k():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGC", "--k", "0"],
+    )
+
+    assert result.exit_code != 0
+
+def test_stats_command_reports_min_fastq_read_length(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATTGG\n"
+        "+\n"
+        "HHHHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert "Min read length: 4" in result.stdout
+
+def test_stats_command_reports_max_fastq_read_length(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATTGG\n"
+        "+\n"
+        "HHHHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert "Max read length: 6" in result.stdout

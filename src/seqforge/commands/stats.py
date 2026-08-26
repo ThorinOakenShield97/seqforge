@@ -16,14 +16,18 @@ def stats(sequence: str) -> None:
             raise typer.Exit(code=1)
 
         reads = 0
-        length = 0
+        total_length = 0
         mean = 0
         gc = 0
+        results = []
         for record in resolved.records:
+            length = 0
             if isinstance(record, FastqRead):
                 seq = Sequence(id=record.id, sequence=record.sequence)
                 reads += 1
+                total_length += seq.length()
                 length += seq.length()
+                results.append(length)
                 mean += record.mean_quality()
                 gc += seq.gc_content()
                 
@@ -56,9 +60,11 @@ def stats(sequence: str) -> None:
 
         if resolved.source == InputSource.FASTQ:
             print(f"Reads: {reads}")
-            print(f"Mean read length: {length/reads}")
+            print(f"Mean read length: {total_length/reads}")
             print(f"Overall mean quality: {mean/reads}")
             print(f"Mean GC content: {gc/reads}%")
+            print(f"Min read length: {min(results)}")
+            print(f"Max read length: {max(results)}")
 
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)
