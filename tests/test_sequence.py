@@ -670,3 +670,69 @@ def test_find_orfs_frame_three():
     )
 
     assert seq.find_orfs(frame=3) == ["ATGAAATAG"]
+
+def test_sequence_returns_kmers():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    assert seq.kmers(k=2) == [
+        "AT",
+        "TG",
+        "GC",
+    ]
+
+def test_kmers_rejects_non_positive_k():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    with pytest.raises(ValueError):
+        seq.kmers(k=0)
+
+def test_kmers_rejects_negative_k():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    with pytest.raises(ValueError):
+        seq.kmers(k=-1)
+
+def test_kmers_returns_empty_for_k_larger_than_sequence():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    assert seq.kmers(k=5) == []
+
+def test_kmer_counts():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATAT",
+    )
+
+    assert seq.kmer_counts(k=2) == {
+        "AT": 2,
+        "TA": 1,
+    }
+
+def test_kmer_counts_rejects_non_positive_k():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    with pytest.raises(ValueError):
+        seq.kmer_counts(k=0)
+
+def test_kmer_counts_returns_empty_for_k_larger_than_sequence():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    assert seq.kmer_counts(k=5) == {}

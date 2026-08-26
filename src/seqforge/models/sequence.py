@@ -341,3 +341,29 @@ class Sequence:
                         orf += triplet
 
         return results
+
+    def kmers(self, k:int):
+        if k > 0:
+            results = []
+            kmer = ''
+            for i in range(len(self.sequence)):
+                kmer += self.sequence[i:i+k]
+                if len(kmer) == k:
+                    results.append(kmer)
+                    kmer = ''
+        else:
+            raise ValueError('Invalid k number')
+            
+        return results
+
+    def kmer_counts(self, k:int) -> dict:
+        results = self.kmers(k)
+
+        kmers = {}
+        for kmer in results:
+            freq = results.count(kmer)
+            if kmer not in kmers:
+                kmers[kmer] = freq
+
+        return kmers
+

@@ -819,3 +819,18 @@ def test_stats_command_reports_mean_fastq_gc_content(tmp_path):
     assert "Mean read length: 4.0" in result.stdout
     assert "Overall mean quality: 39.5" in result.stdout
     assert "Mean GC content: 25.0%" in result.stdout
+
+def test_kmer_command():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGC", "--k", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "AT",
+        "TG",
+        "GC",
+    ]

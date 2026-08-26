@@ -3,6 +3,7 @@ from pathlib import Path
 from seqforge.parsers.fastq import parse_fastq
 from seqforge.exceptions import InvalidFastqError
 from seqforge.models.fastq_read import FastqRead
+from seqforge.models.sequence import Sequence
 
 import pytest
 
@@ -87,3 +88,18 @@ def test_fastq_read_rejects_invalid_quality_character():
             quality="\x20",
         )
 
+def test_fastq_read_sequence_supports_kmers():
+    read = FastqRead(
+        id="read1",
+        sequence="ATAT",
+        quality="IIII",
+    )
+
+    assert Sequence(
+        id=read.id,
+        sequence=read.sequence,
+    ).kmers(k=2) == [
+        "AT",
+        "TA",
+        "AT",
+    ]
