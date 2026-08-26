@@ -658,7 +658,7 @@ def test_stats_command_accepts_fastq_file(tmp_path):
 
     assert result.exit_code == 0
     assert result.stdout.strip().splitlines() == [
-        ">read1",
+        "@read1",
         "Length: 4",
         "GC content: 50.0%",
         "Mean quality: 40.0",
@@ -680,10 +680,52 @@ def test_stats_command_reports_fastq_quality(tmp_path):
 
     assert result.exit_code == 0
     assert result.stdout.strip().splitlines() == [
-        ">read1",
+        "@read1",
         "Length: 4",
         "GC content: 50.0%",
         "Mean quality: 38.5",
         "Min quality: 37",
         "Max quality: 40",
+    ]
+
+def test_gc_command_accepts_fastq_file(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["gc", str(fastq)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "GC content: 50.0%",
+    ]
+
+def test_gc_command_accepts_multiple_fastq_records(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATT\n"
+        "+\n"
+        "HHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["gc", str(fastq)])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "GC content: 50.0%",
+        "@read2",
+        "GC content: 0.0%",
     ]

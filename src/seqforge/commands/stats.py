@@ -19,7 +19,7 @@ def stats(sequence: str) -> None:
             if isinstance(record, FastqRead):
                 seq = Sequence(id=record.id, sequence=record.sequence)
 
-                print(f">{record.id}")
+                print(f"@{record.id}")
                 print(f"Length: {seq.length()}")
                 print(f"GC content: {seq.gc_content()}%")
                 print(f"Mean quality: {record.mean_quality()}")
