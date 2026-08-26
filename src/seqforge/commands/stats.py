@@ -15,10 +15,18 @@ def stats(sequence: str) -> None:
             typer.echo("Error: Cannot calculate statistics for an empty sequence.",err=True)
             raise typer.Exit(code=1)
 
+        reads = 0
+        length = 0
+        mean = 0
+        gc = 0
         for record in resolved.records:
             if isinstance(record, FastqRead):
                 seq = Sequence(id=record.id, sequence=record.sequence)
-
+                reads += 1
+                length += seq.length()
+                mean += record.mean_quality()
+                gc += seq.gc_content()
+                
                 print(f"@{record.id}")
                 print(f"Length: {seq.length()}")
                 print(f"GC content: {seq.gc_content()}%")
@@ -45,6 +53,12 @@ def stats(sequence: str) -> None:
                 print("Base frequencies:")
                 for base in sorted(frequencies):
                     print(f"{base}: {frequencies[base]}%")
+
+        if resolved.source == InputSource.FASTQ:
+            print(f"Reads: {reads}")
+            print(f"Mean read length: {length/reads}")
+            print(f"Overall mean quality: {mean/reads}")
+            print(f"Mean GC content: {gc/reads}%")
 
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)

@@ -664,6 +664,10 @@ def test_stats_command_accepts_fastq_file(tmp_path):
         "Mean quality: 40.0",
         "Min quality: 40",
         "Max quality: 40",
+        "Reads: 1",
+        "Mean read length: 4.0",
+        "Overall mean quality: 40.0",
+        "Mean GC content: 50.0%"
     ]
 
 def test_stats_command_reports_fastq_quality(tmp_path):
@@ -686,6 +690,10 @@ def test_stats_command_reports_fastq_quality(tmp_path):
         "Mean quality: 38.5",
         "Min quality: 37",
         "Max quality: 40",
+        "Reads: 1",
+        "Mean read length: 4.0",
+        "Overall mean quality: 38.5",
+        "Mean GC content: 50.0%"
     ]
 
 def test_gc_command_accepts_fastq_file(tmp_path):
@@ -703,7 +711,7 @@ def test_gc_command_accepts_fastq_file(tmp_path):
     assert result.exit_code == 0
     assert result.stdout.strip().splitlines() == [
         "@read1",
-        "GC content: 50.0%",
+        "GC content: 50.0%"
     ]
 
 def test_gc_command_accepts_multiple_fastq_records(tmp_path):
@@ -729,3 +737,85 @@ def test_gc_command_accepts_multiple_fastq_records(tmp_path):
         "@read2",
         "GC content: 0.0%",
     ]
+
+def test_stats_command_reports_fastq_read_count(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATT\n"
+        "+\n"
+        "HHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert "Reads: 2" in result.stdout
+
+def test_stats_command_reports_mean_fastq_read_length(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATTGG\n"
+        "+\n"
+        "HHHHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert "Reads: 2" in result.stdout
+    assert "Mean read length: 5.0" in result.stdout
+
+def test_stats_command_reports_mean_fastq_quality(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATT\n"
+        "+\n"
+        "HHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert "Reads: 2" in result.stdout
+    assert "Mean read length: 4.0" in result.stdout
+    assert "Overall mean quality: 39.5" in result.stdout
+
+def test_stats_command_reports_mean_fastq_gc_content(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "AATT\n"
+        "+\n"
+        "HHHH\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["stats", str(fastq)])
+
+    assert result.exit_code == 0
+    assert "Reads: 2" in result.stdout
+    assert "Mean read length: 4.0" in result.stdout
+    assert "Overall mean quality: 39.5" in result.stdout
+    assert "Mean GC content: 25.0%" in result.stdout

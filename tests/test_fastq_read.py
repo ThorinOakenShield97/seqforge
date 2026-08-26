@@ -86,3 +86,4 @@ def test_fastq_read_rejects_invalid_quality_character():
             sequence="A",
             quality="\x20",
         )
+
