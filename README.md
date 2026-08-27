@@ -272,7 +272,7 @@ represents a read with:
 ID:       read1
 Sequence: ATGC
 Quality:  IIII
-``
+```
 
 FASTQ files may contain multiple records, which are processed independently.
 
@@ -302,7 +302,8 @@ Available commands:
     transcribe
     translate
     version
-``
+```
+
 ## Input
 
 SeqForge accepts:
@@ -406,7 +407,7 @@ Overall mean quality: 32.1
 Mean GC content: 49.65%
 Min read length: 150
 Max read length: 150
-``
+```
 
 ## Transcription
 
