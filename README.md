@@ -139,9 +139,9 @@ sequence.translate(frame=2)
 sequence.translate(frame=3)
 ```
 Frame numbering is user-facing and follows biological convention:
-frame 1 → offset 0
-frame 2 → offset 1
-frame 3 → offset 2
+- frame 1 → offset 0
+- frame 2 → offset 1
+- frame 3 → offset 2
 
 ## ORF detection
 
@@ -167,13 +167,13 @@ sequence.find_orfs(strand="both", frame=3)
 
 The six possible reading frames can therefore be represented as:
 
-+1 → forward, frame 1
-+2 → forward, frame 2
-+3 → forward, frame 3
+- +1 → forward, frame 1
+- +2 → forward, frame 2
+- +3 → forward, frame 3
 
--1 → reverse, frame 1
--2 → reverse, frame 2
--3 → reverse, frame 3
+- -1 → reverse, frame 1
+- -2 → reverse, frame 2
+- -3 → reverse, frame 3
 
 ## 🧬 IUPAC ambiguity codes
 
@@ -261,15 +261,18 @@ A FASTQ record contains:
 SeqForge currently uses Phred+33 quality encoding.
 
 For example:
+```text
 @read1
 ATGC
 +
 IIII
+```
 represents a read with:
-
+```text
 ID:       read1
 Sequence: ATGC
 Quality:  IIII
+``
 
 FASTQ files may contain multiple records, which are processed independently.
 
@@ -291,6 +294,7 @@ seqforge --help
 ```
 
 Available commands:
+```text
     gc
     kmer
     orf
@@ -298,7 +302,7 @@ Available commands:
     transcribe
     translate
     version
-
+``
 ## Input
 
 SeqForge accepts:
@@ -354,6 +358,7 @@ seqforge stats ATGC
 ```
 
 Example output:
+```text
     Length: 4
     GC content: 50.0%
     Base counts:
@@ -366,6 +371,7 @@ Example output:
     C: 25.0%
     G: 25.0%
     T: 25.0%
+```
 
 For FASTA input, the record identifier is shown before its statistics.
 
@@ -379,7 +385,7 @@ Example:
 seqforge stats reads.fastq
 ```
 Output:
-
+```text
 @read1
 Length: 150
 GC content: 48.0%
@@ -400,6 +406,7 @@ Overall mean quality: 32.1
 Mean GC content: 49.65%
 Min read length: 150
 Max read length: 150
+``
 
 ## Transcription
 
@@ -421,11 +428,12 @@ seqforge transcribe ATGC --strand both
 ```
 
 Output:
-
+```text
 Coding:
 AUGC
 Template:
 GCAU
+```
 
 FASTA input is supported:
 
@@ -480,10 +488,12 @@ seqforge orf sequence.fasta --strand both
 ```
 
 When both strands are requested, the output is grouped explicitly:
+```text
     Forward:
     ATGTGA
     Reverse:
     ATGTAG
+```
 
 A frame can be combined with strand selection:
 
@@ -499,20 +509,21 @@ K-mers can be extracted from literal sequences, FASTA files, and FASTQ files.
 seqforge kmer ATGC --k 2
 ```
 Output:
-
+```text
 AT
 TG
 GC
-
+```
 K-mer frequencies can be requested with --counts:
 
 ```bash
 seqforge kmer ATAT --k 2 --counts
 ```
 Output:
-
+```text
 AT: 2
 TA: 1
+```
 
 FASTA input is supported:
 
