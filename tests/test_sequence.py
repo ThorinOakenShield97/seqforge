@@ -1,6 +1,7 @@
 import pytest
 
 from seqforge.models.sequence import (Sequence, expand_iupac, interpret_codon, CodonResultKind)
+from seqforge.models.molecule_type import MoleculeType
 
 def test_sequence_is_public_api():
     from seqforge import Sequence
@@ -736,3 +737,358 @@ def test_kmer_counts_returns_empty_for_k_larger_than_sequence():
     )
 
     assert seq.kmer_counts(k=5) == {}
+
+def test_sequence_can_be_rna():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.molecule_type == MoleculeType.RNA
+
+def test_sequence_defaults_to_dna():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    assert seq.molecule_type == MoleculeType.DNA
+
+def test_rna_sequence_accepts_rna_bases():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.sequence == "AUGC"
+
+def test_rna_sequence_rejects_dna_thymine():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="rna1",
+            sequence="ATGC",
+            molecule_type=MoleculeType.RNA,
+        )
+
+def test_dna_sequence_rejects_rna_uracil():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="dna1",
+            sequence="AUGC",
+            molecule_type=MoleculeType.DNA,
+        )
+
+def test_rna_sequence_rejects_lowercase_thymine():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="rna1",
+            sequence="augt",
+            molecule_type=MoleculeType.RNA,
+        )
+
+def test_dna_sequence_rejects_lowercase_uracil():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="dna1",
+            sequence="augc",
+            molecule_type=MoleculeType.DNA,
+        )
+
+def test_protein_sequence_accepts_amino_acids():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.sequence == "MKWVTF"
+
+def test_protein_sequence_rejects_invalid_amino_acid():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="protein1",
+            sequence="MKWVTFB",
+            molecule_type=MoleculeType.PROTEIN,
+        )
+
+def test_protein_sequence_accepts_lowercase_amino_acids():
+    seq = Sequence(
+        id="protein1",
+        sequence="mkwvtf",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.sequence == "mkwvtf"
+
+def test_protein_sequence_rejects_reverse_complement():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.reverse_complement()
+
+def test_protein_sequence_rejects_transcription():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.transcribe()
+
+def test_rna_sequence_supports_reverse_complement():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.reverse_complement() == "GCAU"
+
+def test_rna_reverse_complement_uses_uracil():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGU",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.reverse_complement() == "ACAU"
+
+def test_rna_sequence_can_be_translated():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGAAAUAG",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.translate() == "MK"
+
+def test_rna_sequence_stops_at_rna_stop_codon():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGAAAUAA",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.translate() == "MK"
+
+def test_rna_sequence_can_be_translated_in_frame_two():
+    seq = Sequence(
+        id="rna1",
+        sequence="AAUGAAAUAG",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.translate(frame=2) == "MK"
+
+def test_rna_sequence_can_be_translated_in_frame_three():
+    seq = Sequence(
+        id="rna1",
+        sequence="AA AUG AAA UAG".replace(" ", ""),
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.translate(frame=3) == "MK"
+
+def test_rna_sequence_rejects_transcription():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    with pytest.raises(ValueError):
+        seq.transcribe()
+
+def test_protein_sequence_rejects_translation():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.translate()
+
+def test_protein_sequence_rejects_gc_content():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.gc_content()
+
+def test_protein_sequence_supports_length():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.length() == 6
+
+def test_protein_sequence_rejects_base_counts():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.base_counts()
+
+def test_protein_sequence_rejects_base_frequencies():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.base_frequencies()
+
+def test_protein_sequence_supports_motif_search():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.find_motif("WV") == [2]
+
+def test_rna_sequence_supports_gc_content():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.gc_content() == 50.0
+
+def test_rna_sequence_supports_base_frequencies():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.base_frequencies() == {
+        "A": 25.0,
+        "C": 25.0,
+        "G": 25.0,
+        "U": 25.0,
+    }
+
+def test_rna_sequence_can_find_orfs():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGAAAUAA",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs() == ["AUGAAAUAA"]
+
+def test_rna_orf_preserves_uracil():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGCCCUAG",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs() == ["AUGCCCUAG"]
+
+def test_rna_sequence_can_find_orfs_on_reverse_strand():
+    seq = Sequence(
+        id="rna1",
+        sequence="UUAUUUCAU",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs(strand="reverse") == ["AUGAAAUAA"]
+
+def test_rna_sequence_can_find_orfs_on_both_strands():
+    seq = Sequence(
+        id="rna1",
+        sequence="UUAUUUCAU",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs(strand="both") == [
+        "AUGAAAUAA",
+    ]
+
+def test_protein_sequence_counts_amino_acids():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTFM",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.amino_acid_counts() == {
+        "M": 2,
+        "K": 1,
+        "W": 1,
+        "V": 1,
+        "T": 1,
+        "F": 1,
+    }
+
+def test_protein_sequence_calculates_amino_acid_frequencies():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTFM",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    frequencies = seq.amino_acid_frequencies()
+
+    assert frequencies["M"] == 2 / 7 * 100
+    assert frequencies["K"] == 1 / 7 * 100
+    assert frequencies["W"] == 1 / 7 * 100
+    assert frequencies["V"] == 1 / 7 * 100
+    assert frequencies["T"] == 1 / 7 * 100
+    assert frequencies["F"] == 1 / 7 * 100
+
+def test_protein_sequence_amino_acid_frequency_for_repeated_residue():
+    seq = Sequence(
+        id="protein1",
+        sequence="MMMM",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.amino_acid_frequencies() == {
+        "M": 100.0,
+    }
+
+def test_protein_sequence_supports_kmers():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.kmers(k=2) == [
+        "MK",
+        "KW",
+        "WV",
+        "VT",
+        "TF",
+    ]
+
+def test_dna_sequence_rejects_amino_acid_counts():
+    seq = Sequence(
+        id="dna1",
+        sequence="ATGC",
+        molecule_type=MoleculeType.DNA,
+    )
+
+    with pytest.raises(ValueError):
+        seq.amino_acid_counts()

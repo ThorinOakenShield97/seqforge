@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from itertools import product
 from enum import Enum
+from seqforge.models.molecule_type import MoleculeType
 
 
 DNA_COMPLEMENTS = {
@@ -18,6 +19,14 @@ DNA_COMPLEMENTS = {
     'V': 'B',
     'D': 'H',
     'H': 'D',
+    'N': 'N'
+}
+
+RNA_COMPLEMENTS = {
+    'A': 'U',
+    'U': 'A',
+    'G': 'C',
+    'C': 'G',
     'N': 'N'
 }
 
@@ -58,6 +67,8 @@ IUPAC_BASES = {
     'V': ['A', 'C', 'G'],
     'N': ['A', 'C', 'G', 'T'],
 }
+
+AMINOACIDS = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W','Y'}
 
 def expand_iupac(codon:str) -> list[str]:
     """Return all possible DNA codon expansions for an IUPAC codon.
@@ -115,6 +126,20 @@ def interpret_codon(codon:str) -> CodonResult:
 class Sequence:
     id: str
     sequence: str
+    molecule_type: MoleculeType = MoleculeType.DNA
+
+    def __post_init__(self):
+        if self.molecule_type == MoleculeType.RNA:
+            if 'T' in self.sequence.upper():
+                raise ValueError('RNA must not have Ts')
+        elif self.molecule_type == MoleculeType.DNA:
+            if 'U' in self.sequence.upper():
+                raise ValueError('DNA must not have Us')
+        elif self.molecule_type == MoleculeType.PROTEIN:
+            for letter in self.sequence.upper():
+                if letter not in AMINOACIDS:
+                    raise ValueError('Not Valid Aminoacid in Protein')
+
 
     def length(self) -> int:
         """Return the length of the sequence."""
@@ -128,6 +153,8 @@ class Sequence:
         """
         if not self.sequence:
             raise ValueError('Cannot calculate GC content of an empty sequence.')
+        elif self.molecule_type == MoleculeType.PROTEIN:
+            raise ValueError('Proteins do not have Gs or Cs')
         total = len(self.sequence)
         g_count = self.sequence.count('G') + self.sequence.count('g')
         c_count = self.sequence.count('C') + self.sequence.count('c')
@@ -138,6 +165,10 @@ class Sequence:
 
     def base_counts(self) -> dict[str, int]:
         """Return the count of each symbol in the sequence, normalized to uppercase."""
+
+        if self.molecule_type == MoleculeType.PROTEIN:
+            raise ValueError('Cannot count bases in proteins')
+        
         sequence = self.sequence.upper()
         counts = {}
         for letter in sequence:
@@ -170,13 +201,19 @@ class Sequence:
             Raises:
                 ValueError: If the sequence contains an unsupported DNA base.
         """
+        if self.molecule_type == MoleculeType.PROTEIN:
+            raise ValueError('Wrong Molecule')
+        elif self.molecule_type == MoleculeType.DNA:
+            complements = DNA_COMPLEMENTS
+        else:
+            complements = RNA_COMPLEMENTS
         reverse = self.sequence[::-1]
         rev_compl = ''
         for letter in reverse:
-            if letter.upper() in DNA_COMPLEMENTS:
-                rev_compl += DNA_COMPLEMENTS[letter.upper()]
+            if letter.upper() in complements:
+                rev_compl += complements[letter.upper()]
             else:
-                raise ValueError("Invalid DNA base.")
+                raise ValueError("Invalid base.")
 
         return rev_compl
 
@@ -194,6 +231,11 @@ class Sequence:
         Raises:
             ValueError: If ``strand`` is not ``"coding"`` or ``"template"``.
         """
+        if self.molecule_type == MoleculeType.PROTEIN:
+            raise ValueError('Proteins cannot do transcription')
+        elif self.molecule_type == MoleculeType.RNA:
+            raise ValueError('RNA cannot do transcription')
+
         if strand == 'coding':
             sequence = self.sequence.upper()
         elif strand == 'template':
@@ -227,8 +269,15 @@ class Sequence:
         Raises:
             ValueError: If ``frame`` is not ``None``, 1, 2, or 3.
          """
-        
-        sequence = self.sequence.upper()
+        if self.molecule_type == MoleculeType.PROTEIN:
+            raise ValueError('Cannot translate Proteins')
+
+        elif self.molecule_type == MoleculeType.RNA:
+            sequence = self.sequence.replace('U','T')
+
+        else:
+            sequence = self.sequence.upper()
+
         if frame is None:
             start = sequence.find('ATG')
 
@@ -303,16 +352,20 @@ class Sequence:
             ValueError: If ``strand`` is not ``"forward"``, ``"reverse"``,
                 or ``"both"``, or if ``frame`` is not ``None``, 0, 1, or 2.
         """
-
         results = []
         if strand == 'both':
             return self.find_orfs('forward',frame=frame) + self.find_orfs('reverse',frame=frame)
         if strand == "forward":
             sequence = self.sequence.upper()
+            if self.molecule_type == MoleculeType.RNA:
+                sequence = sequence.replace('U','T')
         elif strand == "reverse":
             sequence = self.reverse_complement()
+            if self.molecule_type == MoleculeType.RNA:
+                sequence = sequence.replace('U','T')
         else:
             raise ValueError('Invalid Strand')
+
 
 
         if frame is None:
@@ -335,6 +388,8 @@ class Sequence:
                         orf += triplet
                     elif result.kind == CodonResultKind.STOP:
                         orf += triplet
+                        if self.molecule_type == MoleculeType.RNA:
+                            orf = orf.replace('T','U')
                         results.append(orf)
                         break
                     else:
@@ -367,3 +422,37 @@ class Sequence:
 
         return kmers
 
+    def amino_acid_counts(self):
+        """Return the count of each symbol in the sequence, normalized to uppercase."""
+
+        if self.molecule_type == MoleculeType.DNA:
+            raise ValueError('Cannot count aminoacids in DNA')
+        elif self.molecule_type == MoleculeType.RNA:
+            raise ValueError('Cannot count aminoacids in RNA')
+        
+        sequence = self.sequence.upper()
+        counts = {}
+        for letter in sequence:
+            if letter in counts:
+                counts[letter] += 1
+            else:
+                counts[letter] = 1
+
+        return counts
+
+    def amino_acid_frequencies(self):
+        """Return the frequency of each symbol in the sequence as a percentage.
+
+            Raises:
+                ValueError: If the sequence is empty.
+        """
+        counts = self.amino_acid_counts()
+        total = len(self.sequence)
+
+        if total == 0:
+            raise ValueError('Cannot calculate amino acid frequencies of an empty sequence')
+
+        frequencies = {}
+        for aa in counts:
+            frequencies[aa] = counts[aa]/total * 100
+        return frequencies
