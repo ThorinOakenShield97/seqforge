@@ -1092,3 +1092,279 @@ def test_dna_sequence_rejects_amino_acid_counts():
 
     with pytest.raises(ValueError):
         seq.amino_acid_counts()
+
+def test_protein_sequence_rejects_orf_detection():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.find_orfs()
+
+def test_find_orfs_rna_supports_all_three_frames():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGAAAUAGCCCAUGA",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs() == [
+        "AUGAAAUAG",
+    ]
+
+def test_find_orfs_rna_supports_all_three_reading_frames():
+    seq = Sequence(
+        id="rna_frames",
+        sequence="AAUAUGCCCUAAGCCAUGAAAUAG",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    orfs = seq.find_orfs()
+
+    assert "AUGCCCUAA" in orfs
+    assert "AUGAAAUAG" in orfs
+
+def test_find_orfs_rna_frame_1():
+    seq = Sequence(
+        id="rna_f1",
+        sequence="AUGCCCUAA",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs() == ["AUGCCCUAA"]
+
+
+def test_find_orfs_rna_frame_2():
+    seq = Sequence(
+        id="rna_f2",
+        sequence="AAUGCCCUAA",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs() == ["AUGCCCUAA"]
+
+
+def test_find_orfs_rna_frame_3():
+    seq = Sequence(
+        id="rna_f3",
+        sequence="AAAUGCCCUAA",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.find_orfs() == ["AUGCCCUAA"]
+
+def test_reverse_complement_rna():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.reverse_complement() == "GCAU"
+
+def test_reverse_complement_protein_rejects_operation():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.reverse_complement()
+
+def test_reverse_complement_dna():
+    seq = Sequence(
+        id="dna1",
+        sequence="ATGC",
+        molecule_type=MoleculeType.DNA,
+    )
+
+    assert seq.reverse_complement() == "GCAT"
+
+def test_transcribe_rna_rejects_operation():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    with pytest.raises(ValueError):
+        seq.transcribe()
+
+def test_transcribe_protein_rejects_operation():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.transcribe()
+
+def test_transcribe_dna():
+    seq = Sequence(
+        id="dna1",
+        sequence="ATGC",
+        molecule_type=MoleculeType.DNA,
+    )
+
+    assert seq.transcribe() == "AUGC"
+
+def test_translate_rna():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGAAAUAG",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.translate() == "MK"
+
+def test_translate_protein_rejects_operation():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.translate()
+
+def test_base_counts_rna():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGCUU",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.base_counts() == {
+        "A": 1,
+        "U": 3,
+        "C": 1,
+        "G": 1,
+    }
+
+def test_base_counts_protein_rejects_operation():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.base_counts()
+
+def test_base_frequencies_rna():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGCUU",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.base_frequencies() == {
+        "A": 1 / 6 * 100,
+        "U": 3 / 6 * 100,
+        "C": 1 / 6 * 100,
+        "G": 1 / 6 * 100,
+    }
+
+def test_base_frequencies_protein_rejects_operation():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.base_frequencies()
+
+def test_gc_content_rna():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGCGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    assert seq.gc_content() == pytest.approx(66.67, rel=1e-4)
+
+def test_gc_content_protein_rejects_operation():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.gc_content()
+
+def test_length_protein():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.length() == 6
+
+def test_rna_sequence_rejects_thymine():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="rna_invalid",
+            sequence="AUGCTU",
+            molecule_type=MoleculeType.RNA,
+        )
+
+def test_dna_sequence_rejects_uracil():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="dna_invalid",
+            sequence="ATGCU",
+            molecule_type=MoleculeType.DNA,
+        )
+
+def test_rna_sequence_rejects_amino_acid_counts():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    with pytest.raises(ValueError):
+        seq.amino_acid_counts()
+
+def test_rna_sequence_rejects_amino_acid_frequencies():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    with pytest.raises(ValueError):
+        seq.amino_acid_frequencies()
+
+def test_sequence_accepts_string_molecule_type():
+    seq = Sequence(
+        id="dna1",
+        sequence="ATGC",
+        molecule_type="dna",
+    )
+
+    assert seq.molecule_type == MoleculeType.DNA
+
+def test_sequence_rejects_invalid_molecule_type():
+    with pytest.raises(ValueError):
+        Sequence(
+            id="invalid",
+            sequence="ATGC",
+            molecule_type="pepito",
+        )
+
+def test_sequence_accepts_uppercase_string_molecule_type():
+    seq = Sequence(
+        id="dna1",
+        sequence="ATGC",
+        molecule_type="DNA",
+    )
+
+    assert seq.molecule_type == MoleculeType.DNA

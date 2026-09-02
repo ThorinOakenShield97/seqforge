@@ -129,16 +129,25 @@ class Sequence:
     molecule_type: MoleculeType = MoleculeType.DNA
 
     def __post_init__(self):
-        if self.molecule_type == MoleculeType.RNA:
-            if 'T' in self.sequence.upper():
-                raise ValueError('RNA must not have Ts')
-        elif self.molecule_type == MoleculeType.DNA:
-            if 'U' in self.sequence.upper():
-                raise ValueError('DNA must not have Us')
-        elif self.molecule_type == MoleculeType.PROTEIN:
-            for letter in self.sequence.upper():
-                if letter not in AMINOACIDS:
-                    raise ValueError('Not Valid Aminoacid in Protein')
+
+        if isinstance(self.molecule_type, MoleculeType):
+
+            if self.molecule_type == MoleculeType.RNA:
+                if 'T' in self.sequence.upper():
+                    raise ValueError('RNA must not have Ts')
+            elif self.molecule_type == MoleculeType.DNA:
+                if 'U' in self.sequence.upper():
+                        raise ValueError('DNA must not have Us')
+            elif self.molecule_type == MoleculeType.PROTEIN:
+                for letter in self.sequence.upper():
+                    if letter not in AMINOACIDS:
+                        raise ValueError('Not Valid Aminoacid in Protein')
+                    
+        elif isinstance(self.molecule_type, str):
+            self.molecule_type = self.molecule_type.lower()
+            self.molecule_type = MoleculeType(self.molecule_type)
+        else:
+            raise ValueError('Invalid molecule type')
 
 
     def length(self) -> int:
@@ -184,6 +193,9 @@ class Sequence:
             Raises:
                 ValueError: If the sequence is empty.
         """
+        if self.molecule_type == MoleculeType.PROTEIN:
+            raise ValueError('Cannot count bases in proteins')
+
         counts = self.base_counts()
         total = len(self.sequence)
 
@@ -352,6 +364,10 @@ class Sequence:
             ValueError: If ``strand`` is not ``"forward"``, ``"reverse"``,
                 or ``"both"``, or if ``frame`` is not ``None``, 0, 1, or 2.
         """
+
+        if self.molecule_type == MoleculeType.PROTEIN:
+            raise ValueError('Invalid Molecule Type: Protein')
+
         results = []
         if strand == 'both':
             return self.find_orfs('forward',frame=frame) + self.find_orfs('reverse',frame=frame)
