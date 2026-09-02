@@ -1,13 +1,13 @@
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.exceptions import InvalidFastaError
-from seqforge.models.sequence import Sequence
+from seqforge.models.sequence import Sequence, MoleculeType
 import typer
 
-def orf(sequence: str, strand: str = "forward", frame: int | None = None) -> None:
+def orf(sequence: str, strand: str = "forward", frame: int | None = None, molecule_type: str = 'dna') -> None:
     """Find open reading frames in a DNA sequence."""
 
     try:
-        results = resolve_input(sequence)
+        results = resolve_input(sequence, molecule_type)
 
         for seq in results.sequences:
             if results.source == InputSource.FASTA:

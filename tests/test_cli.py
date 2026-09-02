@@ -1089,3 +1089,112 @@ def test_resolve_input_reads_fasta_with_molecule_type(tmp_path):
     resolved = resolve_input(str(fasta), molecule_type="RNA")
 
     assert resolved.sequences[0].molecule_type == MoleculeType.RNA
+
+def test_gc_command_accepts_rna_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["gc", "AUGC", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "GC content: 50.0%"
+
+def test_gc_command_rejects_protein_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["gc", "MKWVTF", "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code != 0
+    assert "Proteins do not have Gs or Cs" in result.output
+
+def test_stats_command_accepts_rna_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["stats", "AUGC", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert "Length: 4" in result.stdout
+    assert "GC content: 50.0%" in result.stdout
+    assert "U: 1" in result.stdout
+
+def test_orf_command_accepts_rna_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["orf", "AUGAAAUAG", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "AUGAAAUAG"
+
+def test_orf_command_rejects_protein_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["orf", "MKWVTF", "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code != 0
+
+def test_transcribe_command_rejects_rna_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["transcribe", "AUGC", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code != 0
+
+def test_transcribe_command_rejects_protein_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["transcribe", "MKWVTF", "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code != 0
+
+def test_kmer_command_accepts_protein_sequence():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "MKWVTF", "--k", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "MK",
+        "KW",
+        "WV",
+        "VT",
+        "TF",
+    ]
+
+def test_stats_command_accepts_protein_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["stats", "MKWVTFM", "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code == 0
+    assert "Length: 7" in result.stdout
+    assert "Amino acid counts:" in result.stdout
+    assert "M: 2" in result.stdout
+    assert "F: 1" in result.stdout
+    assert "Amino acid frequencies:" in result.stdout
+    assert "M: " in result.stdout

@@ -4,7 +4,7 @@ from seqforge.models.sequence import Sequence
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.exceptions import InvalidFastaError
 
-def transcribe(sequence:str, strand: str | None = None) -> None:
+def transcribe(sequence:str, strand: str | None = None, molecule_type: str = 'dna') -> None:
     """Transcribe DNA sequences into RNA.
 
     Args:
@@ -16,7 +16,7 @@ def transcribe(sequence:str, strand: str | None = None) -> None:
         typer.Exit: If the FASTA input is invalid or the file does not exist.
     """
     try:
-        results = resolve_input(sequence)
+        results = resolve_input(sequence, molecule_type)
         for seq in results.sequences:
             if results.source == InputSource.FASTA:
                 print(f">{seq.id}")

@@ -4,13 +4,13 @@ import typer
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.models.fastq_read import FastqRead
 from seqforge.exceptions import InvalidFastaError
-from seqforge.models.sequence import Sequence
+from seqforge.models.sequence import Sequence, MoleculeType
 
 
-def stats(sequence: str) -> None:
+def stats(sequence: str, molecule_type: str = 'dna' ) -> None:
     """Display sequence statistics."""
     try:
-        resolved = resolve_input(sequence)
+        resolved = resolve_input(sequence, molecule_type)
         if not sequence:
             typer.echo("Error: Cannot calculate statistics for an empty sequence.",err=True)
             raise typer.Exit(code=1)
@@ -44,19 +44,35 @@ def stats(sequence: str) -> None:
                 if resolved.source == InputSource.FASTA:
                     print(f">{seq.id}")
 
-                counts = seq.base_counts()
-                frequencies = seq.base_frequencies()
+                if seq.molecule_type == MoleculeType.DNA or seq.molecule_type == MoleculeType.RNA:
+                    counts = seq.base_counts()
+                    frequencies = seq.base_frequencies()
 
-                print(f"Length: {seq.length()}")
-                print(f"GC content: {seq.gc_content()}%")
+                    print(f"Length: {seq.length()}")
+                    print(f"GC content: {seq.gc_content()}%")
 
-                print("Base counts:")
-                for base in sorted(counts):
-                    print(f"{base}: {counts[base]}")
+                    print("Base counts:")
+                    for base in sorted(counts):
+                        print(f"{base}: {counts[base]}")
 
-                print("Base frequencies:")
-                for base in sorted(frequencies):
-                    print(f"{base}: {frequencies[base]}%")
+                    print("Base frequencies:")
+                    for base in sorted(frequencies):
+                        print(f"{base}: {frequencies[base]}%")
+
+                else:
+                    counts = seq.amino_acid_counts()
+                    frequencies = seq.amino_acid_frequencies()
+
+                    print(f"Length: {seq.length()}")
+
+                    print("Amino acid counts:")
+                    for aa in sorted(counts):
+                        print(f"{aa}: {counts[aa]}")
+
+                    print("Amino acid frequencies:")
+                    for aa in sorted(frequencies):
+                        print(f"{aa}: {frequencies[aa]}%")
+
 
         if resolved.source == InputSource.FASTQ:
             print(f"Reads: {reads}")
