@@ -20,20 +20,30 @@ def stats(sequence: str, molecule_type: str = 'dna' ) -> None:
         mean = 0
         gc = 0
         results = []
+        aa = 0
         for record in resolved.records:
             length = 0
             if isinstance(record, FastqRead):
-                seq = Sequence(id=record.id, sequence=record.sequence)
+                seq = Sequence(id=record.id, sequence=record.sequence, molecule_type = molecule_type)
                 reads += 1
                 total_length += seq.length()
                 length += seq.length()
                 results.append(length)
                 mean += record.mean_quality()
-                gc += seq.gc_content()
                 
+
+                if seq.molecule_type == MoleculeType.DNA or seq.molecule_type == MoleculeType.RNA:
+                    gc += seq.gc_content()
+                elif seq.molecule_type == MoleculeType.PROTEIN:
+                    aminoacids = seq.amino_acid_counts()
                 print(f"@{record.id}")
                 print(f"Length: {seq.length()}")
-                print(f"GC content: {seq.gc_content()}%")
+                if seq.molecule_type == MoleculeType.DNA or seq.molecule_type == MoleculeType.RNA:
+                    print(f"GC content: {seq.gc_content()}%")
+                elif seq.molecule_type == MoleculeType.PROTEIN:
+                    print("Amino acid counts:")
+                    for aa in sorted(aminoacids):
+                        print(f"{aa}: {aminoacids[aa]}")
                 print(f"Mean quality: {record.mean_quality()}")
                 print(f"Min quality: {record.min_quality()}")
                 print(f"Max quality: {record.max_quality()}")
@@ -78,7 +88,8 @@ def stats(sequence: str, molecule_type: str = 'dna' ) -> None:
             print(f"Reads: {reads}")
             print(f"Mean read length: {total_length/reads}")
             print(f"Overall mean quality: {mean/reads}")
-            print(f"Mean GC content: {gc/reads}%")
+            if seq.molecule_type == MoleculeType.DNA or seq.molecule_type == MoleculeType.RNA:
+                print(f"Mean GC content: {gc/reads}%")
             print(f"Min read length: {min(results)}")
             print(f"Max read length: {max(results)}")
 

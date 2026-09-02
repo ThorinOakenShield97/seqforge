@@ -1198,3 +1198,116 @@ def test_stats_command_accepts_protein_molecule_type():
     assert "F: 1" in result.stdout
     assert "Amino acid frequencies:" in result.stdout
     assert "M: " in result.stdout
+
+def test_translate_command_accepts_rna_fasta_with_molecule_type(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">gene1\nAUGAAAUAG\n")
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["translate", str(fasta), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">gene1",
+        "Protein: MK",
+    ]
+
+def test_gc_command_accepts_rna_fasta_with_molecule_type(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nAUGC\n")
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["gc", str(fasta), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "GC content: 50.0%",
+    ]
+
+def test_orf_command_accepts_rna_fasta_with_molecule_type(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nAUGAAAUAG\n")
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["orf", str(fasta), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "AUGAAAUAG",
+    ]
+
+def test_stats_command_accepts_rna_fastq_with_molecule_type(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "AUGC\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["stats", str(fastq), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert "GC content: 50.0%" in result.stdout
+
+def test_gc_command_accepts_rna_fastq_with_molecule_type(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "AUGC\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["gc", str(fastq), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "GC content: 50.0%",
+    ]
+
+def test_stats_command_accepts_protein_fastq_with_molecule_type(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "MKWVTF\n"
+        "+\n"
+        "IIIIII\n"
+    )
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["stats", str(fastq), "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code == 0
+    assert "Length: 6" in result.stdout
+    assert "Amino acid counts:" in result.stdout
+    assert "M: 1" in result.stdout

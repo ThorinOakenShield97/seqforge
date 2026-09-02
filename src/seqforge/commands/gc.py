@@ -17,7 +17,7 @@ def gc(sequence: str, molecule_type: str = 'dna') -> None:
 
         for record in results.records:
             if isinstance(record, FastqRead):
-                seq = Sequence(id=record.id, sequence=record.sequence)
+                seq = Sequence(id=record.id, sequence=record.sequence, molecule_type = molecule_type)
                 print(f"@{record.id}")
                 print(f"GC content: {seq.gc_content()}%")
 
