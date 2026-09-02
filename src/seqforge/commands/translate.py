@@ -1,14 +1,14 @@
 import typer
 
-from seqforge.models.sequence import Sequence
+from seqforge.models.sequence import Sequence,MoleculeType
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.exceptions import InvalidFastaError
 
 
-def translate(sequence: str, frame: int | None = None) -> None:
+def translate(sequence: str, frame: int | None = None, molecule_type: str = 'dna') -> None:
     """Translate a DNA sequence into a protein sequence."""
     try:
-        results = resolve_input(sequence)
+        results = resolve_input(sequence,molecule_type)
 
         for seq in results.sequences:
             if results.source == InputSource.FASTA:

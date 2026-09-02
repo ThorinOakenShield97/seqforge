@@ -6,6 +6,7 @@ from importlib.metadata import version
 from seqforge.commands.input import resolve_input
 from seqforge.exceptions import InvalidFastaError
 from seqforge.commands.input import (InputSource, resolve_input)
+from seqforge.models.molecule_type import MoleculeType
 
 
 def test_version_command():
@@ -1064,3 +1065,27 @@ def test_stats_command_reports_max_fastq_read_length(tmp_path):
 
     assert result.exit_code == 0
     assert "Max read length: 6" in result.stdout
+
+def test_translate_command_accepts_rna_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["translate", "AUGAAAUAG", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "Protein: MK"
+
+def test_resolve_input_accepts_molecule_type():
+    resolved = resolve_input("AUGC", molecule_type="RNA")
+
+    assert resolved.sequences[0].molecule_type == MoleculeType.RNA
+
+def test_resolve_input_reads_fasta_with_molecule_type(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nAUGC\n")
+
+    resolved = resolve_input(str(fasta), molecule_type="RNA")
+
+    assert resolved.sequences[0].molecule_type == MoleculeType.RNA
