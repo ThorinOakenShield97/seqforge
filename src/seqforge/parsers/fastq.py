@@ -5,6 +5,17 @@ from seqforge.models.fastq_read import FastqRead
 
 
 def parse_fastq(path: Path) -> list[FastqRead]:
+    """Parse a FASTQ file and return its reads.
+
+    Args:
+        path: Path to the FASTQ file.
+
+    Returns:
+        A list of FastqRead objects.
+
+    Raises:
+        InvalidFastqError: If the FASTQ format is invalid.
+    """
     records = []
 
     with open(path, 'r') as file:

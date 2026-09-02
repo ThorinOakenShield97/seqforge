@@ -7,7 +7,17 @@ from seqforge.models.fastq_read import FastqRead
 
 
 def gc(sequence: str, molecule_type: str = 'dna') -> None:
-    """Display the GC content of a DNA sequence."""
+    """Display the GC content of a DNA or RNA sequence.
+
+    Args:
+        sequence: Literal sequence or path to a FASTA/FASTQ file.
+        molecule_type: Molecule type of the input sequence. Defaults to DNA.
+
+    Raises:
+        FileNotFoundError: If the input file does not exist.
+        InvalidFastaError: If the FASTA file is invalid.
+        ValueError: If the molecule type or sequence is invalid, or if the input is a protein sequence.
+        """
     if not sequence:
         typer.echo("Error: Cannot calculate GC content of an empty sequence.", err=True)
         raise typer.Exit(code=1)

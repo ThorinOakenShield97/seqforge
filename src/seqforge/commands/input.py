@@ -12,18 +12,32 @@ FASTQ_EXTENSIONS = {".fastq", ".fq"}
 
 
 class InputSource(Enum):
+    """Identify the source type used to create a resolved input."""
     LITERAL = "literal"
     FASTA = "fasta"
     FASTQ = "fastq"
 
 @dataclass
 class ResolvedInput:
+    """Represent resolved sequence records and their input source."""
     sequences: list[Sequence]
     source: InputSource
     records: list[Sequence | FastqRead]
 
 def resolve_input(value: str, molecule_type: MoleculeType | str = MoleculeType.DNA) -> ResolvedInput:
-    """Resolve a literal sequence or FASTA file into Sequence objects."""
+    """Resolve a literal sequence or sequence file into a ResolvedInput.
+
+    Args:
+        value: Literal sequence or path to a FASTA/FASTQ file.
+        molecule_type: Molecule type assigned to parsed sequences. Defaults to DNA.
+
+    Returns:
+        A ResolvedInput containing the parsed records and their source.
+
+    Raises:
+        ValueError: If molecule_type is invalid.
+        FileNotFoundError: If a FASTA/FASTQ file is not found.
+    """
     input_path = Path(value)
 
     if isinstance(molecule_type, str):

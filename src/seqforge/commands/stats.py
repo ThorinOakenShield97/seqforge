@@ -8,7 +8,20 @@ from seqforge.models.sequence import Sequence, MoleculeType
 
 
 def stats(sequence: str, molecule_type: str = 'dna' ) -> None:
-    """Display sequence statistics."""
+    """Display statistics for DNA, RNA, or protein sequences.
+    
+    For DNA and RNA sequences, reports length, GC content, base counts,
+    and base frequencies. For protein sequences, reports length, amino
+    acid counts, and amino acid frequencies.
+
+    Args:
+        sequence: Literal sequence or path to a FASTA/FASTQ file.
+        molecule_type: Molecule type of the input sequence. Defaults to DNA.
+
+    Raises:
+        ValueError: If the molecule type or sequence is invalid.
+        FileNotFoundError: If the input file does not exist.
+        InvalidFastaError: If the FASTA input is invalid."""
     try:
         resolved = resolve_input(sequence, molecule_type)
         if not sequence:
@@ -20,7 +33,6 @@ def stats(sequence: str, molecule_type: str = 'dna' ) -> None:
         mean = 0
         gc = 0
         results = []
-        aa = 0
         for record in resolved.records:
             length = 0
             if isinstance(record, FastqRead):

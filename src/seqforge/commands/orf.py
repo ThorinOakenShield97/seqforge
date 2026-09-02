@@ -4,7 +4,18 @@ from seqforge.models.sequence import Sequence, MoleculeType
 import typer
 
 def orf(sequence: str, strand: str = "forward", frame: int | None = None, molecule_type: str = 'dna') -> None:
-    """Find open reading frames in a DNA sequence."""
+    """Find open reading frames in a DNA or RNA sequence.
+
+    Args:
+        sequence: Literal sequence or path to a FASTA file.
+        strand: Strand to search: "forward", "reverse", or "both".
+        frame: Reading frame to search, or None to search all frames.
+        molecule_type: Molecule type of the input sequence. Defaults to DNA.
+
+    Raises:
+        FileNotFoundError: If the input file does not exist.
+        InvalidFastaError: If the FASTA file is invalid.
+        ValueError: If the molecule type, strand, frame, or sequence is invalid."""
 
     try:
         results = resolve_input(sequence, molecule_type)

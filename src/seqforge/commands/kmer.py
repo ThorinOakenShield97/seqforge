@@ -6,6 +6,17 @@ from seqforge.exceptions import InvalidFastaError
 from seqforge.models.sequence import Sequence
 
 def kmer(sequence: str, k:int | None = None, counts:bool = False):
+    """Display k-mers found in a biological sequence.
+
+    Args:
+        sequence: Literal sequence or path to a FASTA/FASTQ file.
+        k: Length of each k-mer.
+        counts: If True, display the frequency of each k-mer.
+     
+     Raises:
+          ValueError: If k is not a positive integer.
+          FileNotFoundError: If the input file does not exist.
+    """
     try:
         results = resolve_input(sequence)
         for record in results.records:

@@ -158,7 +158,7 @@ class Sequence:
         """Return the GC content of the sequence as a percentage.
 
         Raises:
-            ValueError: If the sequence is empty.
+            ValueError: If the sequence is empty or is a protein.
         """
         if not self.sequence:
             raise ValueError('Cannot calculate GC content of an empty sequence.')
@@ -173,7 +173,8 @@ class Sequence:
         return gc_count/total * 100
 
     def base_counts(self) -> dict[str, int]:
-        """Return the count of each symbol in the sequence, normalized to uppercase."""
+        """Return the count of each nucleotide symbol in the sequence,
+            normalized to uppercase."""
 
         if self.molecule_type == MoleculeType.PROTEIN:
             raise ValueError('Cannot count bases in proteins')
@@ -188,10 +189,10 @@ class Sequence:
         return counts
 
     def base_frequencies(self) -> dict[str, float]:
-        """Return the frequency of each symbol in the sequence as a percentage.
+        """Return the frequency of each symbol in the nucleotide sequence as a percentage.
 
             Raises:
-                ValueError: If the sequence is empty.
+                ValueError: If the sequence is empty or is a protein.
         """
         if self.molecule_type == MoleculeType.PROTEIN:
             raise ValueError('Cannot count bases in proteins')
@@ -208,10 +209,10 @@ class Sequence:
         return frequencies
 
     def reverse_complement(self) -> str:
-        """Return the reverse complement of the DNA sequence.
+        """Return the reverse complement of the DNA or RNA sequence.
 
             Raises:
-                ValueError: If the sequence contains an unsupported DNA base.
+                ValueError: If the sequence contains an unsupported DNA base or is a protein.
         """
         if self.molecule_type == MoleculeType.PROTEIN:
             raise ValueError('Wrong Molecule')
@@ -241,7 +242,8 @@ class Sequence:
             The RNA transcript.
 
         Raises:
-            ValueError: If ``strand`` is not ``"coding"`` or ``"template"``.
+            ValueError: If ``strand`` is not ``"coding"`` or ``"template"``
+            or the molecule type is RNA or protein.
         """
         if self.molecule_type == MoleculeType.PROTEIN:
             raise ValueError('Proteins cannot do transcription')
@@ -260,7 +262,7 @@ class Sequence:
 
     def translate(self, frame: int | None = None) -> str:     
         """
-        Translate the sequence from the first start codon to the first stop codon.
+        Translate the sequence from the first start codon of DNA or RNA to the first stop codon.
 
         When ``frame`` is ``None``, the first start codon in the sequence is used.
         When ``frame`` is 1, 2, or 3, the first start codon in the selected
@@ -280,6 +282,7 @@ class Sequence:
 
         Raises:
             ValueError: If ``frame`` is not ``None``, 1, 2, or 3.
+                        If it is a protein.
          """
         if self.molecule_type == MoleculeType.PROTEIN:
             raise ValueError('Cannot translate Proteins')
@@ -339,12 +342,11 @@ class Sequence:
         return positions
 
     def find_orfs(self, strand: str = "forward", frame: int | None = None) -> list[str]:
-        """Return open reading frames found in the selected DNA strand.
+        """Return open reading frames found in the selected DNA or RNA strand.
 
         Searches for complete ORFs beginning with ``ATG`` and ending at a
-        compatible stop codon. When ``frame`` is ``None``, all reading frames
-        are searched. When ``frame`` is 0, 1, or 2, the search is restricted
-        to that reading frame.
+        compatible stop codon. When `frame` is `None`, all reading frames are searched.
+        When `frame` is 1, 2, or 3, the search is restricted to that reading frame.
 
         IUPAC-ambiguous codons are supported and are considered stop codons
         only when all possible expansions are stop codons.
@@ -362,7 +364,7 @@ class Sequence:
 
         Raises:
             ValueError: If ``strand`` is not ``"forward"``, ``"reverse"``,
-                or ``"both"``, or if ``frame`` is not ``None``, 0, 1, or 2.
+                or ``"both"``, or if ``frame`` is not ``None``, 1, 2, or 3.
         """
 
         if self.molecule_type == MoleculeType.PROTEIN:
@@ -414,6 +416,11 @@ class Sequence:
         return results
 
     def kmers(self, k:int):
+        """ Return all k-mers of length `k` from the sequence.
+
+            Raises:
+                ValueError: If invalid k number ( k <= 0).           
+        """
         if k > 0:
             results = []
             kmer = ''
@@ -428,6 +435,10 @@ class Sequence:
         return results
 
     def kmer_counts(self, k:int) -> dict:
+        """Return all k-mers of length `k` from the sequence.
+            Raises:
+                ValueError: for k <= 0"""
+
         results = self.kmers(k)
 
         kmers = {}
@@ -439,7 +450,11 @@ class Sequence:
         return kmers
 
     def amino_acid_counts(self):
-        """Return the count of each symbol in the sequence, normalized to uppercase."""
+        """Return the count of each amino acid residue in the sequence, normalized to uppercase, restricted to proteins.
+        
+        Raises:
+            ValueError: if molecule type is DNA or RNA.
+        """
 
         if self.molecule_type == MoleculeType.DNA:
             raise ValueError('Cannot count aminoacids in DNA')
@@ -457,10 +472,10 @@ class Sequence:
         return counts
 
     def amino_acid_frequencies(self):
-        """Return the frequency of each symbol in the sequence as a percentage.
+        """Return the frequency of each amino acid residue in the sequence as a percentage, restricted to proteins.
 
             Raises:
-                ValueError: If the sequence is empty.
+                ValueError: If the sequence is empty or if molecule type is DNA or RNA.
         """
         counts = self.amino_acid_counts()
         total = len(self.sequence)

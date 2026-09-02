@@ -8,12 +8,15 @@ def transcribe(sequence:str, strand: str | None = None, molecule_type: str = 'dn
     """Transcribe DNA sequences into RNA.
 
     Args:
-        sequence: DNA sequence or path to a FASTA file.
+        sequence: Literal sequence or path to a FASTA/FASTQ file.
         strand: Strand to transcribe: ``"coding"``, ``"template"``,
             or ``"both"``. ``None`` uses the coding strand.
+        molecule_type: Molecule type of the input sequence. Defaults to DNA.
 
     Raises:
-        typer.Exit: If the FASTA input is invalid or the file does not exist.
+        ValueError: If the molecule type or strand is invalid, or if the input sequence is RNA or protein.
+        InvalidFastaError: If the FASTA input is invalid.
+        FileNotFoundError: If the input file does not exist.
     """
     try:
         results = resolve_input(sequence, molecule_type)

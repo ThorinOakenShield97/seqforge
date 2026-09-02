@@ -3,7 +3,18 @@ from seqforge.models.sequence import Sequence,MoleculeType
 from seqforge.exceptions import InvalidFastaError
 
 def parse_fasta(path: Path, molecule_type: MoleculeType = MoleculeType.DNA) -> list[Sequence]:
-    """Parse a FASTA file and return its sequences."""
+    """Parse a FASTA file and return its sequences.
+    Args:
+        path: Path to the FASTA file.
+        molecule_type: Molecule type assigned to each parsed sequence. Defaults to DNA.
+
+    Returns:
+        A list of parsed Sequence objects
+
+    Raises:
+        InvalidFastaError: If the FASTA structure is invalid.
+        ValueError: If a parsed sequence is incompatible with molecule_type.
+        """
     records = []
     current_id = None
     with open(path,'r') as file:
