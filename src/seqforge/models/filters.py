@@ -1,5 +1,3 @@
-
-
 def filter_by_length(sequences, min_length = None, max_length = None):
         
     if min_length is not None and max_length is not None:
@@ -30,4 +28,13 @@ def filter_by_length(sequences, min_length = None, max_length = None):
             if length <= max_length:
                 results.append(sequence)
 
+    return results
+
+def filter_by_motif(sequences, motif: str):
+
+    results = []
+    for sequence in sequences:
+        result = sequence.find_motif(motif)
+        if result:
+            results.append(sequence)
     return results
