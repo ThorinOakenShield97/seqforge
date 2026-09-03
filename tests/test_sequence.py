@@ -2,6 +2,7 @@ import pytest
 
 from seqforge.models.sequence import (Sequence, expand_iupac, interpret_codon, CodonResultKind)
 from seqforge.models.molecule_type import MoleculeType
+from seqforge.models.filters import filter_by_length
 
 def test_sequence_is_public_api():
     from seqforge import Sequence
@@ -1368,3 +1369,92 @@ def test_sequence_accepts_uppercase_string_molecule_type():
     )
 
     assert seq.molecule_type == MoleculeType.DNA
+
+def test_filter_by_min_length():
+    sequences = [
+        Sequence(id="short", sequence="AT"),
+        Sequence(id="medium", sequence="ATGC"),
+        Sequence(id="long", sequence="ATGCGG"),
+    ]
+
+    result = filter_by_length(sequences, min_length=4)
+
+    assert [sequence.id for sequence in result] == ["medium", "long"]
+
+
+def test_filter_by_max_length():
+    sequences = [
+        Sequence(id="short", sequence="AT"),
+        Sequence(id="medium", sequence="ATGC"),
+        Sequence(id="long", sequence="ATGCGG"),
+    ]
+
+    result = filter_by_length(sequences, max_length=4)
+
+    assert [sequence.id for sequence in result] == ["short", "medium"]
+
+
+def test_filter_by_length_range_is_inclusive():
+    sequences = [
+        Sequence(id="below", sequence="AT"),
+        Sequence(id="min", sequence="ATG"),
+        Sequence(id="middle", sequence="ATGC"),
+        Sequence(id="max", sequence="ATGCG"),
+        Sequence(id="above", sequence="ATGCGG"),
+    ]
+
+    result = filter_by_length(
+        sequences,
+        min_length=3,
+        max_length=5,
+    )
+
+    assert [sequence.id for sequence in result] == [
+        "min",
+        "middle",
+        "max",
+    ]
+
+
+def test_filter_by_length_returns_empty_when_nothing_matches():
+    sequences = [
+        Sequence(id="one", sequence="AT"),
+        Sequence(id="two", sequence="ATGC"),
+    ]
+
+    result = filter_by_length(sequences, min_length=10)
+
+    assert result == []
+
+
+def test_filter_by_length_rejects_invalid_range():
+    sequences = [
+        Sequence(id="seq1", sequence="ATGC"),
+    ]
+
+    with pytest.raises(ValueError):
+        filter_by_length(
+            sequences,
+            min_length=10,
+            max_length=5,
+        )
+
+
+def test_filter_by_length_rejects_negative_limits():
+    sequences = [
+        Sequence(id="seq1", sequence="ATGC"),
+    ]
+
+    with pytest.raises(ValueError):
+        filter_by_length(sequences, min_length=-1)
+
+    with pytest.raises(ValueError):
+        filter_by_length(sequences, max_length=-1)
+
+def test_filter_by_length_requires_at_least_one_limit():
+    sequences = [
+        Sequence(id="seq1", sequence="ATGC"),
+    ]
+
+    with pytest.raises(ValueError):
+        filter_by_length(sequences)
