@@ -1311,3 +1311,176 @@ def test_stats_command_accepts_protein_fastq_with_molecule_type(tmp_path):
     assert "Length: 6" in result.stdout
     assert "Amino acid counts:" in result.stdout
     assert "M: 1" in result.stdout
+
+def test_filter_command_fasta_by_min_length(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">short\n"
+        "AT\n"
+        ">medium\n"
+        "ATGC\n"
+        ">long\n"
+        "ATGCGG\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["filter", str(fasta), "--min-length", "4"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">medium",
+        "ATGC",
+        ">long",
+        "ATGCGG",
+    ]
+
+
+def test_filter_command_fasta_by_motif(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGCGT\n"
+        ">seq2\n"
+        "GGGCCC\n"
+        ">seq3\n"
+        "TTATGC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["filter", str(fasta), "--motif", "ATG"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "ATGCGT",
+        ">seq3",
+        "TTATGC",
+    ]
+
+
+def test_filter_command_fasta_by_min_and_max_length(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">short\n"
+        "AT\n"
+        ">valid1\n"
+        "ATGC\n"
+        ">valid2\n"
+        "ATGCG\n"
+        ">long\n"
+        "ATGCGGC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "filter",
+            str(fasta),
+            "--min-length",
+            "4",
+            "--max-length",
+            "5",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">valid1",
+        "ATGC",
+        ">valid2",
+        "ATGCG",
+    ]
+
+
+def test_filter_command_combines_criteria_with_and(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">short_motif\n"
+        "ATG\n"
+        ">long_no_motif\n"
+        "GGGGGG\n"
+        ">long_motif\n"
+        "ATGCGC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "filter",
+            str(fasta),
+            "--min-length",
+            "4",
+            "--motif",
+            "ATG",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">long_motif",
+        "ATGCGC",
+    ]
+
+
+def test_filter_command_fastq_by_min_quality(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@low\n"
+        "ATGC\n"
+        "+\n"
+        "!!!!\n"
+        "@high\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["filter", str(fastq), "--min-quality", "40"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@high",
+        "ATGC",
+        "+",
+        "IIII",
+    ]
+
+
+def test_filter_command_rejects_min_quality_for_fasta(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["filter", str(fasta), "--min-quality", "30"],
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, ValueError)
+    assert "quality" in str(result.exception).lower()
+
+
+def test_filter_command_requires_at_least_one_filter(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(">seq1\nATGC\n")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["filter", str(fasta)],
+    )
+
+    assert result.exit_code != 0

@@ -7,6 +7,7 @@ from seqforge.commands.orf import orf
 from seqforge.commands.stats import stats
 from seqforge.commands.transcribe import transcribe
 from seqforge.commands.kmer import kmer
+from seqforge.commands.filter import filter
 
 
 
@@ -34,3 +35,5 @@ app.command("stats")(stats)
 app.command("transcribe")(transcribe)
 
 app.command("kmer")(kmer)
+
+app.command('filter')(filter)
