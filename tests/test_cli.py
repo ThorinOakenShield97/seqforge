@@ -1562,3 +1562,122 @@ def test_filter_command_rejects_min_quality_for_literal():
     assert result.exit_code != 0
     assert isinstance(result.exception, ValueError)
     assert "quality" in str(result.exception).lower()
+
+def test_gc_command_with_window_size(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGCATGC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["gc", str(fasta), "--window-size", "4"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "positions 1 to 4: 50.0%",
+        "positions 2 to 5: 50.0%",
+        "positions 3 to 6: 50.0%",
+        "positions 4 to 7: 50.0%",
+        "positions 5 to 8: 50.0%",
+    ]
+
+def test_gc_command_with_window_size_multiple_fasta_records(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\n"
+        "ATGC\n"
+        ">seq2\n"
+        "GGGG\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["gc", str(fasta), "--window-size", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        ">seq1",
+        "positions 1 to 2: 0.0%",
+        "positions 2 to 3: 50.0%",
+        "positions 3 to 4: 100.0%",
+        ">seq2",
+        "positions 1 to 2: 100.0%",
+        "positions 2 to 3: 100.0%",
+        "positions 3 to 4: 100.0%",
+    ]
+
+def test_gc_command_literal_with_window_size():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["gc", "ATGC", "--window-size", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "positions 1 to 2: 0.0%",
+        "positions 2 to 3: 50.0%",
+        "positions 3 to 4: 100.0%",
+    ]
+
+def test_gc_command_fastq_with_window_size(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["gc", str(fastq), "--window-size", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "positions 1 to 2: 0.0%",
+        "positions 2 to 3: 50.0%",
+        "positions 3 to 4: 100.0%",
+    ]
+
+def test_gc_command_fastq_with_window_size_multiple_records(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@read1\n"
+        "ATGC\n"
+        "+\n"
+        "IIII\n"
+        "@read2\n"
+        "GGGG\n"
+        "+\n"
+        "IIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["gc", str(fastq), "--window-size", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "@read1",
+        "positions 1 to 2: 0.0%",
+        "positions 2 to 3: 50.0%",
+        "positions 3 to 4: 100.0%",
+        "@read2",
+        "positions 1 to 2: 100.0%",
+        "positions 2 to 3: 100.0%",
+        "positions 3 to 4: 100.0%",
+    ]

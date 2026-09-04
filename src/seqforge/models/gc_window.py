@@ -1,6 +1,19 @@
 from seqforge.models.sequence import Sequence
 
 def gc_content_windows(sequence, window_size: int):
+    """Calculate GC content over sliding windows.
+
+    Args:
+        sequence: DNA or RNA sequence to analyze.
+        window_size: Size of each sliding window.
+
+    Returns:
+        A list of tuples containing the 1-based start position,
+        1-based end position, and GC content of each window.
+
+    Raises:
+        ValueError: If window_size is not greater than 0.
+    """
 
     if window_size is not None:
         if window_size <= 0:

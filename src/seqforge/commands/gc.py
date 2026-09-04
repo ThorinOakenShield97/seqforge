@@ -4,9 +4,10 @@ from seqforge.models.sequence import Sequence,MoleculeType
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.exceptions import InvalidFastaError
 from seqforge.models.fastq_read import FastqRead
+from seqforge.models.gc_window import gc_content_windows
 
 
-def gc(sequence: str, molecule_type: str = 'dna') -> None:
+def gc(sequence: str, molecule_type: str = 'dna', window_size: int | None = None) -> None:
     """Display the GC content of a DNA or RNA sequence.
 
     Args:
@@ -26,7 +27,17 @@ def gc(sequence: str, molecule_type: str = 'dna') -> None:
         results = resolve_input(sequence, molecule_type)
 
         for record in results.records:
-            if isinstance(record, FastqRead):
+            if window_size is not None:
+                seq = Sequence(id = record.id, sequence = record.sequence, molecule_type = molecule_type)
+                windows = gc_content_windows(seq, window_size)
+                if results.source == InputSource.FASTA:
+                    print(f">{record.id}")
+                elif isinstance(record, FastqRead):
+                    print(f"@{record.id}")
+                for start, end, gc in windows:
+                    print(f"positions {start} to {end}: {gc}%")
+
+            elif isinstance(record, FastqRead):
                 seq = Sequence(id=record.id, sequence=record.sequence, molecule_type = molecule_type)
                 print(f"@{record.id}")
                 print(f"GC content: {seq.gc_content()}%")
@@ -47,3 +58,5 @@ def gc(sequence: str, molecule_type: str = 'dna') -> None:
     except InvalidFastaError as i:
         typer.echo(f"Error: {i}", err=True)
         raise typer.Exit(code=1)
+
+

@@ -233,3 +233,19 @@ def test_filter_by_quality_with_empty_collection():
     result = filter_by_quality([], min_quality=30)
 
     assert result == []
+
+def test_filter_by_quality_rejects_none_min_quality():
+    reads = [
+        FastqRead(id="read1", sequence="ATGC", quality="IIII"),
+    ]
+
+    with pytest.raises(ValueError):
+        filter_by_quality(reads, min_quality=None)
+
+def test_filter_by_motif_rejects_empty_motif():
+    sequences = [
+        Sequence(id="seq1", sequence="ATGC"),
+    ]
+
+    with pytest.raises(ValueError):
+        filter_by_motif(sequences, motif="")
