@@ -20,10 +20,11 @@ def filter(sequence: str, min_length: int | None = None, max_length: int | None 
         filtered = filter_by_motif(filtered, motif = motif)
 
     if min_quality is not None:
-        if results.source == InputSource.FASTA:
-            raise ValueError('Cannot apply quality in FASTA files')
+        if results.source == InputSource.FASTQ:
+            filtered = filter_by_quality(filtered, min_quality=min_quality)
 
-        filtered = filter_by_quality(filtered, min_quality = min_quality)
+        else:
+            raise ValueError('Cannot apply quality in FASTA files')
 
 
     for record in filtered:
@@ -36,5 +37,8 @@ def filter(sequence: str, min_length: int | None = None, max_length: int | None 
             print(record.sequence)
             print("+")
             print(record.quality)
+
+        else:
+            print(record.sequence)
 
 

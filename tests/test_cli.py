@@ -1484,3 +1484,81 @@ def test_filter_command_requires_at_least_one_filter(tmp_path):
     )
 
     assert result.exit_code != 0
+
+def test_filter_command_literal_sequence_by_min_length():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["filter", "ATGC", "--min-length", "4"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+    "ATGC",
+    ]
+
+def test_filter_command_literal_sequence_by_motif():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["filter", "ATGCGT", "--motif", "ATG"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip().splitlines() == [
+        "ATGCGT",
+    ]
+
+def test_filter_command_literal_sequence_without_matching_motif():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["filter", "ATGCGT", "--motif", "CCC"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == ""
+
+def test_filter_command_literal_combines_length_and_motif():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "filter",
+            "ATGCGT",
+            "--min-length",
+            "6",
+            "--motif",
+            "ATG",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "ATGCGT"
+
+def test_filter_command_literal_sequence_by_max_length():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["filter", "ATGCGT", "--max-length", "5"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == ""
+
+def test_filter_command_rejects_min_quality_for_literal():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["filter", "ATGC", "--min-quality", "30"],
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, ValueError)
+    assert "quality" in str(result.exception).lower()
