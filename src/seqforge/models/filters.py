@@ -38,3 +38,20 @@ def filter_by_motif(sequences, motif: str):
         if result:
             results.append(sequence)
     return results
+
+def filter_by_quality(sequences, min_quality = None):
+
+    if min_quality is not None:
+        if min_quality < 0:
+            raise ValueError('Minimum quality cannot be lower than 0')
+
+    results = []
+    for sequence in sequences:
+        quality = sequence.mean_quality()
+
+        if min_quality is not None:
+            if quality >= min_quality:
+                results.append(sequence)
+
+    return results
+    

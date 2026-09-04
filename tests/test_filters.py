@@ -1,6 +1,7 @@
 from seqforge.models.sequence import Sequence
 from seqforge.models.molecule_type import MoleculeType
-from seqforge.models.filters import filter_by_length, filter_by_motif
+from seqforge.models.filters import filter_by_length, filter_by_motif,filter_by_quality
+from seqforge.models.fastq_read import FastqRead
 
 import pytest
 
@@ -148,3 +149,87 @@ def test_filter_by_motif_does_not_modify_input_collection():
     filter_by_motif(sequences, "ATG")
 
     assert sequences == original
+
+
+def test_filter_by_quality():
+    reads = [
+        FastqRead(id="low", sequence="ATGC", quality="!!!!"),  # 0
+        FastqRead(id="medium", sequence="ATGC", quality="IIII"),  # 40
+        FastqRead(id="high", sequence="ATGC", quality="JJJJ"),  # 41
+    ]
+
+    result = filter_by_quality(reads, min_quality=40)
+
+    assert [read.id for read in result] == ["medium", "high"]
+
+
+def test_filter_by_quality_includes_threshold():
+    reads = [
+        FastqRead(id="read1", sequence="ATGC", quality="IIII"),
+    ]
+
+    result = filter_by_quality(reads, min_quality=40)
+
+    assert result == reads
+
+
+def test_filter_by_quality_returns_empty_when_nothing_matches():
+    reads = [
+        FastqRead(id="low", sequence="ATGC", quality="!!!!"),
+        FastqRead(id="medium", sequence="ATGC", quality="####"),
+    ]
+
+    result = filter_by_quality(reads, min_quality=40)
+
+    assert result == []
+
+
+def test_filter_by_quality_keeps_original_read_objects():
+    reads = [
+        FastqRead(id="read1", sequence="ATGC", quality="IIII"),
+    ]
+
+    result = filter_by_quality(reads, min_quality=30)
+
+    assert result[0] is reads[0]
+
+
+def test_filter_by_quality_rejects_negative_threshold():
+    reads = [
+        FastqRead(id="read1", sequence="ATGC", quality="IIII"),
+    ]
+
+    with pytest.raises(ValueError):
+        filter_by_quality(reads, min_quality=-1)
+
+def test_filter_by_quality_accepts_zero_threshold():
+    reads = [
+        FastqRead(id="read1", sequence="ATGC", quality="!!!!"),
+    ]
+
+    result = filter_by_quality(reads, min_quality=0)
+
+    assert result == reads
+
+def test_filter_by_quality_uses_mean_quality():
+    reads = [
+        FastqRead(
+            id="read1",
+            sequence="ATGC",
+            quality="I?II",
+        ),
+        FastqRead(
+            id="read2",
+            sequence="ATGC",
+            quality="IIII",
+        ),
+    ]
+
+    result = filter_by_quality(reads, min_quality=39)
+
+    assert [read.id for read in result] == ["read2"]
+
+def test_filter_by_quality_with_empty_collection():
+    result = filter_by_quality([], min_quality=30)
+
+    assert result == []
