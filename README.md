@@ -2,7 +2,7 @@
 
 > A modern Python toolkit for biological sequence analysis.
 
-Current release: 0.4.0
+Current release: 0.5.0
 
 SeqForge is an open-source Python toolkit for common biological sequence analysis tasks.
 
@@ -58,13 +58,19 @@ SeqForge currently provides:
 
 - K-mer counting
 
+- Sequence filtering by length
+
+- Sequence filtering by motif
+
+- FASTQ read filtering by minimum mean quality
+
 - Command-line interface
 
 - Python API
 
 - Literal sequence, FASTA, and FASTQ input from the CLI
 
-DNA, RNA, and protein molecule-type support
+- DNA, RNA, and protein molecule-type support
 
 - CLI support for FASTA and FASTQ multi-record files
 
@@ -190,6 +196,75 @@ sequence.base_frequencies()
 sequence.find_motif("ATG")
 
 ```
+
+## Filtering
+
+SeqForge provides filtering operations for collections of sequences and FASTQ reads.
+
+## Filter by length
+
+```python
+from seqforge.models.filters import filter_by_length
+
+filtered = filter_by_length(
+    sequences,
+    min_length=100,
+    max_length=500,
+)
+```
+
+Minimum and maximum lengths are inclusive. Either limit may be omitted.
+
+## Filter by motif
+
+```python
+from seqforge.models.filters import filter_by_motif
+
+filtered = filter_by_motif(sequences, motif="ATG")
+```
+
+Only sequences containing the motif are retained.
+
+## Filter FASTQ reads by quality
+
+```python
+from seqforge.models.filters import filter_by_quality
+
+filtered = filter_by_quality(
+    reads,
+    min_quality=30,
+)
+```
+
+Filtering is based on the read's mean Phred quality, using the quality metrics already provided by FastqRead.
+
+## 🪟 GC content by sliding windows
+
+GC content can be calculated over sliding windows:
+
+```python
+from seqforge.models.gc_window import gc_content_windows
+
+windows = gc_content_windows(sequence, window_size=100)
+```
+
+Each result contains:
+
+```text
+(start, end, gc_content)
+```
+
+Positions are reported using 1-based coordinates.
+
+For example:
+
+```text
+(1, 100, 48.0)
+(2, 101, 49.0)
+(3, 102, 50.0)
+```
+
+DNA and RNA sequences are supported. Protein sequences are not valid inputs for GC content analysis.
 
 ## Transcription
 
@@ -479,6 +554,8 @@ Available commands:
 
 ```text
 
+filter
+
 gc
 
 kmer
@@ -492,7 +569,6 @@ transcribe
 translate
 
 version
-
 ```
 
 ## Input
@@ -531,6 +607,43 @@ seqforge stats sequence.fastq
 
 FASTA and FASTQ files may contain multiple records. Each record is processed independently and its identifier is preserved in the output.
 
+## Filtering from the CLI
+
+The filter command supports length, motif, and FASTQ quality criteria.
+
+Filter a FASTA file by minimum length:
+
+```python
+seqforge filter sequences.fasta --min-length 100
+```
+
+Filter by maximum length:
+
+```python
+seqforge filter sequences.fasta --max-length 500
+```
+
+Filter by motif:
+
+```python
+seqforge filter sequences.fasta --motif ATG
+```
+
+Multiple criteria can be combined. Criteria are applied together:
+
+```python
+seqforge filter sequences.fasta --min-length 100 --max-length 500 --motif ATG
+```
+
+FASTQ reads can be filtered by minimum mean quality:
+
+```python
+seqforge filter reads.fastq --min-quality 30
+```
+
+The FASTQ records that pass filtering keep their identifier, sequence, separator, and quality string intact.
+
+
 ## GC content
 
 ```bash
@@ -562,6 +675,23 @@ seqforge gc sequence.fastq
 GC content is supported for DNA and RNA sequences. Protein sequences are not valid inputs for GC content analysis.
 
 For FASTQ input, GC content is calculated from each read sequence and quality scores do not affect the calculation.
+
+## GC content by window
+
+Use --window-size to calculate GC content over sliding windows:
+
+seqforge gc sequence.fasta --window-size 100
+
+Output:
+
+>seq1
+positions 1 to 100: 48.0%
+positions 2 to 101: 49.0%
+positions 3 to 102: 50.0%
+
+Window positions are reported using 1-based coordinates. The same windowed analysis can be applied to FASTQ reads:
+
+seqforge gc reads.fastq --window-size 100
 
 ## Protein statistics
 
@@ -881,7 +1011,7 @@ uv build
 
 ```
 
-The project maintains an automated test suite covering core sequence-analysis functionality, FASTA parsing, CLI behaviour, and package functionality.
+The project maintains an automated test suite covering core sequence-analysis functionality, FASTA parsing, FASTQ parsing, CLI behaviour, filtering, windowed GC analysis, and package functionality.
 
 GitHub Actions run the test suite and verify that the package can be built.
 
@@ -909,33 +1039,9 @@ The project aims to provide:
 
 ## 🗺️ Roadmap
 
-### 0.3.0
-
-The 0.3.x release line expanded sequence analysis and introduced FASTQ workflows:
-
-- Biological reading frames 1, 2, and 3
-
-- Strand-aware ORF analysis
-
-- Coding and template strand transcription
-
-- FASTQ parsing
-
-- FASTQ multi-record processing
-
-- FASTQ quality analysis
-
-- FASTQ statistics and read metrics
-
-- K-mer generation and counting
-
-- FASTA and FASTQ multi-record CLI processing
-
-- Expanded CLI functionality
-
 ### 0.4.0
 
-The 0.4.x release line introduces explicit molecule-type support:
+The 0.4.x release line introduced explicit molecule-type support:
 
 - DNA, RNA, and protein sequence models
 
@@ -953,15 +1059,29 @@ The 0.4.x release line introduces explicit molecule-type support:
 
 - Expanded sequence and command documentation
 
+### 0.5.0
+
+The 0.5.x release line focuses on sequence filtering and windowed analysis:
+
+- Sequence filtering by length
+
+- Sequence filtering by motif
+
+- FASTQ filtering by minimum mean quality
+
+- CLI filtering with combined criteria
+
+- GC content analysis by sliding windows
+
+- Windowed GC analysis for FASTA and FASTQ input
+
+- 1-based window coordinates in user-facing results
+
+- Expanded CLI and API documentation
+
 ### Future releases
 
 Planned areas of development include:
-
-- Sequence filtering operations
-
-- Quality-based FASTQ filtering
-
-- GC content analysis by window
 
 - Motif analysis improvements
 

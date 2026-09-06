@@ -1,6 +1,6 @@
 import typer
 
-from seqforge.models.sequence import Sequence,MoleculeType
+from seqforge.models.sequence import Sequence
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.exceptions import InvalidFastaError
 from seqforge.models.fastq_read import FastqRead
@@ -8,17 +8,22 @@ from seqforge.models.gc_window import gc_content_windows
 
 
 def gc(sequence: str, molecule_type: str = 'dna', window_size: int | None = None) -> None:
-    """Display the GC content of a DNA or RNA sequence.
+    """Display GC content for a DNA or RNA sequence.
+
+    When window_size is provided, GC content is calculated over
+    sliding windows.
 
     Args:
         sequence: Literal sequence or path to a FASTA/FASTQ file.
         molecule_type: Molecule type of the input sequence. Defaults to DNA.
+        window_size: Size of the sliding window used for GC analysis.
 
     Raises:
         FileNotFoundError: If the input file does not exist.
         InvalidFastaError: If the FASTA file is invalid.
-        ValueError: If the molecule type or sequence is invalid, or if the input is a protein sequence.
-        """
+        ValueError: If the molecule type or sequence is invalid, if the
+            input is a protein sequence, or if the window size is invalid.
+    """
     if not sequence:
         typer.echo("Error: Cannot calculate GC content of an empty sequence.", err=True)
         raise typer.Exit(code=1)

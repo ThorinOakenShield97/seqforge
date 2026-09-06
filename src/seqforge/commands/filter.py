@@ -1,5 +1,3 @@
-import typer
-
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.models.fastq_read import FastqRead
 from seqforge.models.filters import filter_by_length, filter_by_motif, filter_by_quality
