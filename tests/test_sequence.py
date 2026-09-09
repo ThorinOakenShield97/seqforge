@@ -1432,3 +1432,113 @@ def test_reverse_transcribe_rejects_protein():
 
     with pytest.raises(ValueError):
         seq.reverse_transcribe()
+
+def test_kmer_frequencies():
+    seq = Sequence(id="seq1", sequence="ATGATG")
+
+    print(seq.kmers(3))
+
+    frequencies = seq.kmer_frequencies(3)
+
+    assert frequencies == {
+        "ATG": 2 / 4,
+        "TGA": 1 / 4,
+        "GAT": 1 / 4,
+    }
+
+def test_sequence_returns_overlapping_kmers():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGATG",
+    )
+
+    assert seq.kmers(k=3) == [
+        "ATG",
+        "TGA",
+        "GAT",
+        "ATG",
+    ]
+
+def test_find_kmers():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGATGCAT",
+    )
+
+    assert seq.find_kmers(["ATG", "CAT"]) == {
+        "ATG": [1, 4],
+        "CAT": [7],
+    }
+
+def test_find_kmers_case_insensitive():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGATG",
+    )
+
+    assert seq.find_kmers(["atg"]) == {
+        "ATG": [1, 4],
+    }
+
+def test_sequence_returns_protein_kmers():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.kmers(k=2) == [
+        "MK",
+        "KW",
+        "WV",
+        "VT",
+        "TF",
+    ]
+
+def test_find_kmers_protein():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq.find_kmers(["WV", "TF"]) == {
+        "WV": [3],
+        "TF": [5],
+    }
+
+def test_find_kmers_empty_list():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGATG",
+    )
+
+    assert seq.find_kmers([]) == {}
+
+def test_find_kmers_rejects_empty_kmer():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGATG",
+    )
+
+    with pytest.raises(ValueError):
+        seq.find_kmers([""])
+
+def test_find_kmers_rejects_non_string_kmer():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGATG",
+    )
+
+    with pytest.raises(TypeError):
+        seq.find_kmers([123])
+
+def test_find_kmers_longer_than_sequence():
+    seq = Sequence(
+        id="seq1",
+        sequence="ATGC",
+    )
+
+    assert seq.find_kmers(["ATGCA"]) == {
+        "ATGCA": [],
+    }

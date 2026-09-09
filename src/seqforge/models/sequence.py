@@ -442,7 +442,7 @@ class Sequence:
             results = []
             kmer = ''
             for i in range(len(self.sequence)):
-                kmer += self.sequence[i:i+k]
+                kmer = self.sequence[i:i+k]
                 if len(kmer) == k:
                     results.append(kmer)
                     kmer = ''
@@ -465,6 +465,38 @@ class Sequence:
                 kmers[kmer] = freq
 
         return kmers
+
+    def kmer_frequencies(self, k:int) -> dict:
+
+        results = self.kmer_counts(k)
+        total = sum(results.values())
+
+        frequencies = {}
+
+        for result in results:
+            frequencies[result] = results[result]/total
+
+        return frequencies
+
+    def find_kmers(self, kmer:list[str]) -> dict:
+
+        positions = {}
+        sequence = self.sequence.upper()
+        kmers = [k.upper() if isinstance(k,str) else TypeError('kmer must be a string') for k in kmer]
+
+        for k in kmers:
+            if len(k) == 0:
+                raise ValueError('Emppty kmer')
+            elif isinstance(k,str):  
+                results = []
+                for i in range(len(sequence)):
+                    if sequence[i:i+len(k)] == k:
+                        results.append(i+1)
+
+                positions[k] = results
+
+        return positions
+
 
     def amino_acid_counts(self):
         """Return the count of each amino acid residue in the sequence, normalized to uppercase, restricted to proteins.
