@@ -1401,3 +1401,34 @@ def test_reverse_transcribe():
 
     assert result.sequence == "TACGGA"
     assert result.molecule_type == MoleculeType.DNA
+
+def test_reverse_transcribe_preserves_id():
+    seq = Sequence(
+        id="rna42",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    result = seq.reverse_transcribe()
+
+    assert result.id == "rna42"
+
+def test_reverse_transcribe_rejects_dna():
+    seq = Sequence(
+        id="dna1",
+        sequence="ATGC",
+        molecule_type=MoleculeType.DNA,
+    )
+
+    with pytest.raises(ValueError):
+        seq.reverse_transcribe()
+
+def test_reverse_transcribe_rejects_protein():
+    seq = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    with pytest.raises(ValueError):
+        seq.reverse_transcribe()

@@ -274,7 +274,7 @@ class Sequence:
             elif letter == 'G':
                 result += 'C'
 
-        seq = Sequence(id = id, sequence= result, molecule_type= MoleculeType.DNA)
+        seq = Sequence(id = self.id, sequence= result, molecule_type= MoleculeType.DNA)
         return seq
 
     def translate(self, frame: int | None = None) -> str:     
