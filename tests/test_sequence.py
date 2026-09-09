@@ -1389,3 +1389,15 @@ def test_find_motif_exact_match():
     seq = Sequence(id="seq1", sequence="ATGC")
 
     assert seq.find_motif("ATGC") == [1]
+
+def test_reverse_transcribe():
+    seq = Sequence(
+        id="rna1",
+        sequence="AUGCCU",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    result = seq.reverse_transcribe()
+
+    assert result.sequence == "TACGGA"
+    assert result.molecule_type == MoleculeType.DNA

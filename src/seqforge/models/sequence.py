@@ -259,6 +259,23 @@ class Sequence:
 
         return sequence.replace('T', 'U')
 
+    def reverse_transcribe(self):
+        if self.molecule_type != MoleculeType.RNA:
+            raise ValueError('Cannot reverse transcribe DNA or protein')
+
+        result = ''
+        for letter in self.sequence:
+            if letter == 'U':
+                result += 'A'
+            elif letter == 'A':
+                result += 'T'
+            elif letter == 'C':
+                result += 'G'
+            elif letter == 'G':
+                result += 'C'
+
+        seq = Sequence(id = id, sequence= result, molecule_type= MoleculeType.DNA)
+        return seq
 
     def translate(self, frame: int | None = None) -> str:     
         """
