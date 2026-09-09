@@ -337,7 +337,7 @@ class Sequence:
             raise ValueError('Empty Motif')
         for i in range(len(sequence)):
             if sequence[i:i+len(motif)] == motif:
-                positions.append(i)
+                positions.append(i+1)
 
         return positions
 

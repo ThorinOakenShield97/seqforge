@@ -254,7 +254,7 @@ def test_find_motif():
         sequence="ATGCCATG"
     )
 
-    assert seq.find_motif("ATG") == [0, 5]
+    assert seq.find_motif("ATG") == [1, 6]
 
 def test_find_motif_overlapping():
     seq = Sequence(
@@ -262,7 +262,7 @@ def test_find_motif_overlapping():
         sequence="AAAA"
     )
 
-    assert seq.find_motif("AAA") == [0, 1]
+    assert seq.find_motif("AAA") == [1, 2]
 
 def test_find_motif_lowercase():
     seq = Sequence(
@@ -270,7 +270,7 @@ def test_find_motif_lowercase():
         sequence="atgccatg"
     )
 
-    assert seq.find_motif("atg") == [0, 5]
+    assert seq.find_motif("atg") == [1, 6]
 
 def test_find_motif_empty():
     seq = Sequence(
@@ -963,7 +963,7 @@ def test_protein_sequence_supports_motif_search():
         molecule_type=MoleculeType.PROTEIN,
     )
 
-    assert seq.find_motif("WV") == [2]
+    assert seq.find_motif("WV") == [3]
 
 def test_rna_sequence_supports_gc_content():
     seq = Sequence(
@@ -1370,3 +1370,7 @@ def test_sequence_accepts_uppercase_string_molecule_type():
 
     assert seq.molecule_type == MoleculeType.DNA
 
+def test_find_motif_returns_one_based_positions():
+    sequence = Sequence(id="seq1", sequence="AATGCCATG")
+
+    assert sequence.find_motif("ATG") == [2, 7]
