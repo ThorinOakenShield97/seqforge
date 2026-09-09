@@ -1374,3 +1374,18 @@ def test_find_motif_returns_one_based_positions():
     sequence = Sequence(id="seq1", sequence="AATGCCATG")
 
     assert sequence.find_motif("ATG") == [2, 7]
+
+def test_find_motif_longer_than_sequence():
+    seq = Sequence(id="seq1", sequence="ATGC")
+
+    assert seq.find_motif("ATGCA") == []
+
+def test_find_motif_single_character():
+    seq = Sequence(id="seq1", sequence="AGGCA")
+
+    assert seq.find_motif("G") == [2, 3]
+
+def test_find_motif_exact_match():
+    seq = Sequence(id="seq1", sequence="ATGC")
+
+    assert seq.find_motif("ATGC") == [1]
