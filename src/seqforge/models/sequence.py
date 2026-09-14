@@ -352,6 +352,7 @@ class Sequence:
         motif = motif.upper()
         if len(motif) == 0:
             raise ValueError('Empty Motif')
+        
         for i in range(len(sequence)):
             if sequence[i:i+len(motif)] == motif:
                 positions.append(i+1)
@@ -537,7 +538,20 @@ class Sequence:
             frequencies[aa] = counts[aa]/total * 100
         return frequencies
 
-            
+    def distance(self, other):
+
+        if self.molecule_type != other.molecule_type:
+            raise ValueError('Sequences must have the same molecule type')
+
+        if len(self.sequence) != len(other.sequence):
+            raise ValueError('Sequences must have equal length')
+
+        distance = 0
+        for letter_1, letter_2 in zip(self.sequence.upper(), other.sequence.upper()):
+            if letter_1 != letter_2:
+                distance += 1
+
+        return distance
 
 
         

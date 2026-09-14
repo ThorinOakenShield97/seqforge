@@ -1542,3 +1542,69 @@ def test_find_kmers_longer_than_sequence():
     assert seq.find_kmers(["ATGCA"]) == {
         "ATGCA": [],
     }
+
+def test_hamming_distance():
+    seq1 = Sequence(id="seq1", sequence="ATGCGA")
+    seq2 = Sequence(id="seq2", sequence="ATGTCA")
+
+    assert seq1.distance(seq2) == 2
+
+def test_hamming_distance_rejects_different_lengths():
+    seq1 = Sequence(id="seq1", sequence="ATGC")
+    seq2 = Sequence(id="seq2", sequence="ATG")
+
+    with pytest.raises(ValueError):
+        seq1.distance(seq2)
+
+def test_hamming_distance_identical_sequences():
+    seq1 = Sequence(id="seq1", sequence="ATGC")
+    seq2 = Sequence(id="seq2", sequence="ATGC")
+
+    assert seq1.distance(seq2) == 0
+
+def test_hamming_distance_all_different():
+    seq1 = Sequence(id="seq1", sequence="AAAA")
+    seq2 = Sequence(id="seq2", sequence="TTTT")
+
+    assert seq1.distance(seq2) == 4
+
+def test_hamming_distance_case_insensitive():
+    seq1 = Sequence(id="seq1", sequence="atgc")
+    seq2 = Sequence(id="seq2", sequence="ATGC")
+
+    assert seq1.distance(seq2) == 0
+
+def test_hamming_distance_protein():
+    seq1 = Sequence(
+        id="protein1",
+        sequence="MKWVTF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+    seq2 = Sequence(
+        id="protein2",
+        sequence="MKWETF",
+        molecule_type=MoleculeType.PROTEIN,
+    )
+
+    assert seq1.distance(seq2) == 1
+
+def test_hamming_distance_rejects_different_molecule_types():
+    seq1 = Sequence(
+        id="dna1",
+        sequence="ATGC",
+        molecule_type=MoleculeType.DNA,
+    )
+    seq2 = Sequence(
+        id="rna1",
+        sequence="AUGC",
+        molecule_type=MoleculeType.RNA,
+    )
+
+    with pytest.raises(ValueError):
+        seq1.distance(seq2)
+
+def test_hamming_distance_is_symmetric():
+    seq1 = Sequence(id="seq1", sequence="ATGC")
+    seq2 = Sequence(id="seq2", sequence="AAGC")
+
+    assert seq1.distance(seq2) == seq2.distance(seq1)
