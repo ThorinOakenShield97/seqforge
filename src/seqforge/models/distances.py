@@ -1,6 +1,3 @@
-from seqforge.models.sequence import Sequence
-
-
 def pairwise_distances(sequences):
 
     results = []
