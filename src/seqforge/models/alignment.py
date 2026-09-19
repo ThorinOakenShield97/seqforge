@@ -59,4 +59,57 @@ def global_alignment(seq1, seq2, match=1, mismatch=-1, gap=-1):
             aligned_seq2 += seq2.sequence[j]
             j+= 1
 
+    while i < len(seq1.sequence):
+        aligned_seq1 += seq1.sequence[i]
+        aligned_seq2 += '-'
+        i += 1
+
+    while j < len(seq2.sequence):
+        aligned_seq1 += '-'
+        aligned_seq2 += seq2.sequence[j]
+        j += 1
+
     return aligned_seq1, aligned_seq2
+
+def multiple_alignment(sequences):
+
+    if not sequences:
+        raise ValueError('No sequences in list to be aligned')
+
+    if len(sequences) == 1:
+        return [sequences[0].sequence]
+
+    aligned = global_alignment(sequences[0],sequences[1])
+    aligned = list(aligned)
+
+    for seq in sequences[2:]:
+        aligned_reference, aligned_new = global_alignment(sequences[0], seq)
+
+        i = 0
+        j = 0
+
+        while i < len(aligned[0]) and j < len(aligned_reference):
+            if aligned[0][i] == aligned_reference[j]:
+                i += 1
+                j += 1   
+
+            elif aligned_reference[j] == '-':
+                insert_pos = i
+                for k in range(len(aligned)):
+                    aligned[k] = (aligned[k][:insert_pos] + '-' + aligned[k][insert_pos:])
+                i += 1
+                j += 1 
+
+            elif aligned[0][i] == '-':
+                aligned_new = aligned_new[:j] + '-' + aligned_new[j:]
+                i += 1
+
+        while j < len(aligned_reference):
+            if aligned_reference[j] == '-':
+                for k in range(len(aligned)):
+                    aligned[k] = aligned[k] + '-'
+            j += 1
+
+        aligned.append(aligned_new)   
+
+    return aligned
