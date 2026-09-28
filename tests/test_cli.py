@@ -1681,3 +1681,59 @@ def test_gc_command_fastq_with_window_size_multiple_records(tmp_path):
         "positions 2 to 3: 100.0%",
         "positions 3 to 4: 100.0%",
     ]
+
+def test_align_command_fasta_multiple_sequences(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGC\n"
+        ">seq2\nATC\n"
+        ">seq3\nATGC\n"
+    )
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["align", str(fasta)],
+    )
+    print(result.output)
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "ATGC\n"
+        "AT-C\n"
+        "ATGC\n"
+    )
+
+def test_align_command_fastq_multiple_sequences(tmp_path):
+    fastq = tmp_path / "sequences.fastq"
+    fastq.write_text(
+    "@seq1\nATGC\n"
+    "+\nIIII\n"
+    "@seq2\nATC\n"
+    "+\nIII\n"
+    "@seq3\nATGC\n"
+    "+\nIIII\n"
+    )
+
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["align", str(fastq)],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "ATGC\n"
+        "AT-C\n"
+        "ATGC\n"
+    )
+
+def test_align_command_literal():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["align", "ATGC"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "ATGC\n"
