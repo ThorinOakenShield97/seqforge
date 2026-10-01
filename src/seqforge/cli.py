@@ -11,6 +11,7 @@ from seqforge.commands.filter import filter
 from seqforge.commands.align import align
 from seqforge.commands.motif import motif
 from seqforge.commands.reverse_transcribe import reverse_transcribe
+from seqforge.commands.distance import distance
 
 
 
@@ -45,3 +46,5 @@ app.command("align")(align)
 app.command('motif')(motif)
 
 app.command('reverse-transcribe')(reverse_transcribe)
+
+app.command('distance')(distance)
