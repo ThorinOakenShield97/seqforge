@@ -10,7 +10,7 @@ from seqforge.commands.kmer import kmer
 from seqforge.commands.filter import filter
 from seqforge.commands.align import align
 from seqforge.commands.motif import motif
-
+from seqforge.commands.reverse_transcribe import reverse_transcribe
 
 
 
@@ -43,3 +43,5 @@ app.command('filter')(filter)
 app.command("align")(align)
 
 app.command('motif')(motif)
+
+app.command('reverse-transcribe')(reverse_transcribe)

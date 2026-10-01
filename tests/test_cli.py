@@ -1821,3 +1821,219 @@ def test_reverse_transcribe_command_literal():
 
     assert result.exit_code == 0
     assert result.stdout == "TACGGA\n"
+
+def test_resolve_input_accepts_rna_literal():
+    result = resolve_input("AUGCCU", molecule_type=MoleculeType.RNA)
+
+    assert result.records[0].molecule_type == MoleculeType.RNA
+
+def test_reverse_transcribe_command_fasta_multiple_sequences(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nAUGCCU\n"
+        ">seq2\nUUAGGC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["reverse-transcribe", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "TACGGA\n"
+        "AATCCG\n"
+    )
+
+def test_reverse_transcribe_command_fastq_multiple_sequences(tmp_path):
+    fastq = tmp_path / "sequences.fastq"
+    fastq.write_text(
+        "@seq1\nAUGCCU\n"
+        "+\nIIIIII\n"
+        "@seq2\nUUAGGC\n"
+        "+\nIIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["reverse-transcribe", str(fastq)])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "TACGGA\n"
+        "AATCCG\n"
+    )
+
+def test_kmer_command_frequencies():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGATG", "--k", "3", "--frequencies"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "ATG: 0.5\n"
+        "TGA: 0.25\n"
+        "GAT: 0.25\n"
+    )
+
+def test_kmer_command_frequencies_fasta_multiple_sequences(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGATG\n"
+        ">seq2\nTTT\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fasta), "--k", "3", "--frequencies"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        ">seq1\n"
+        "ATG: 0.5\n"
+        "TGA: 0.25\n"
+        "GAT: 0.25\n"
+        ">seq2\n"
+        "TTT: 1.0\n"
+    )
+
+def test_kmer_command_frequencies_fastq_multiple_sequences(tmp_path):
+    fastq = tmp_path / "sequences.fastq"
+    fastq.write_text(
+        "@seq1\nATGATG\n"
+        "+\nIIIIII\n"
+        "@seq2\nTTT\n"
+        "+\nIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fastq), "--k", "3", "--frequencies"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "ATG: 0.5\n"
+        "TGA: 0.25\n"
+        "GAT: 0.25\n"
+        "@seq2\n"
+        "TTT: 1.0\n"
+    )
+
+def test_kmer_command_find():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGC", "--k", "2", "--find", "AT", "--find", "TG"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "AT: [1]\n"
+        "TG: [2]\n"
+    )
+
+def test_kmer_command_find_fasta_multiple_sequences(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGCAT\n"
+        ">seq2\nGGATG\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fasta), "--k", "3", "--find", "ATG", "--find", "TGC"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        ">seq1\n"
+        "ATG: [1]\n"
+        "TGC: [2]\n"
+        ">seq2\n"
+        "ATG: [3]\n"
+        "TGC: []\n"
+    )
+
+def test_kmer_command_rejects_counts_and_frequencies_together():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGATG", "--k", "3", "--counts", "--frequencies"],
+    )
+
+    assert result.exit_code != 0
+
+def test_kmer_command_rejects_counts_and_find_together():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGC", "--k", "2", "--counts", "--find", "AT"],
+    )
+
+    assert result.exit_code != 0
+
+def test_kmer_command_rejects_frequencies_and_find_together():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGC", "--k", "2", "--frequencies", "--find", "AT"],
+    )
+
+    assert result.exit_code != 0
+
+def test_kmer_command_find_without_k():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGC", "--find", "AT"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "AT: [1]\n"
+
+def test_kmer_command_find_fastq_multiple_sequences(tmp_path):
+    fastq = tmp_path / "sequences.fastq"
+    fastq.write_text(
+        "@seq1\nATGCAT\n"
+        "+\nIIIIII\n"
+        "@seq2\nGGATG\n"
+        "+\nIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["kmer", str(fastq), "--find", "ATG", "--find", "TGC"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "ATG: [1]\n"
+        "TGC: [2]\n"
+        "@seq2\n"
+        "ATG: [3]\n"
+        "TGC: []\n"
+    )
+
+def test_distance_command_literal():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["distance", "ATGC", "ATCC"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "distance: 1\n"
