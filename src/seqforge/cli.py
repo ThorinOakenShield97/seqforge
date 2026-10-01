@@ -9,6 +9,7 @@ from seqforge.commands.transcribe import transcribe
 from seqforge.commands.kmer import kmer
 from seqforge.commands.filter import filter
 from seqforge.commands.align import align
+from seqforge.commands.motif import motif
 
 
 
@@ -40,3 +41,5 @@ app.command("kmer")(kmer)
 app.command('filter')(filter)
 
 app.command("align")(align)
+
+app.command('motif')(motif)

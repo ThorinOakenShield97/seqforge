@@ -1737,3 +1737,87 @@ def test_align_command_literal():
 
     assert result.exit_code == 0
     assert result.stdout == "ATGC\n"
+
+def test_align_command_fasta_multiple_gaps(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGC\n"
+        ">seq2\nAGC\n"
+        ">seq3\nATC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["align", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "ATGC\n"
+        "A-GC\n"
+        "AT-C\n"
+    )
+
+def test_motif_command_literal():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["motif", "ATGATG", "ATG"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "positions: [1, 4]\n"
+
+def test_motif_command_fasta_multiple_sequences(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGATG\n"
+        ">seq2\nCCCATG\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["motif", str(fasta), "ATG"])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "positions: [1, 4]\n"
+        "positions: [4]\n"
+    )
+
+def test_motif_command_literal_overlapping():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["motif", "AAAA", "AA"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "positions: [1, 2, 3]\n"
+
+def test_motif_command_literal_not_found():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["motif", "ATGC", "AAA"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "positions: []\n"
+
+def test_motif_command_fastq_multiple_sequences(tmp_path):
+    fastq = tmp_path / "sequences.fastq"
+    fastq.write_text(
+        "@seq1\nATGATG\n"
+        "+\nIIIIII\n"
+        "@seq2\nCCCATG\n"
+        "+\nIIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["motif", str(fastq), "ATG"])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "positions: [1, 4]\n"
+        "positions: [4]\n"
+    )
+
+def test_reverse_transcribe_command_literal():
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["reverse-transcribe", "AUGCCU"])
+
+    assert result.exit_code == 0
+    assert result.stdout == "TACGGA\n"
