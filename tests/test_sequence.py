@@ -1610,15 +1610,3 @@ def test_hamming_distance_is_symmetric():
 
     assert seq1.distance(seq2) == seq2.distance(seq1)
 
-def test_pairwise_distances():
-    seq1 = Sequence(id="seq1", sequence="AAAA")
-    seq2 = Sequence(id="seq2", sequence="AAAT")
-    seq3 = Sequence(id="seq3", sequence="AATT")
-
-    result = pairwise_distances([seq1, seq2, seq3])
-
-    assert result == [
-        ("seq1", "seq2", 1),
-        ("seq1", "seq3", 2),
-        ("seq2", "seq3", 1),
-    ]

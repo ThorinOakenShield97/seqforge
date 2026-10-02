@@ -2037,3 +2037,138 @@ def test_distance_command_literal():
 
     assert result.exit_code == 0
     assert result.stdout == "distance: 1\n"
+
+def test_distance_command_accepts_rna():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["distance", "AUGC", "AUCC", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "distance: 1\n"
+
+def test_distance_command_accepts_protein():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["distance", "MKWV", "MKLV", "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "distance: 1\n"
+
+
+def test_distances_command_fasta_multiple_sequences(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGC\n"
+        ">seq2\nATCC\n"
+        ">seq3\nAAAA\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["distances", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "seq1, seq2: 1\n"
+        "seq1, seq3: 3\n"
+        "seq2, seq3: 3\n"
+    )
+
+def test_distances_command_fastq_multiple_sequences(tmp_path):
+    fastq = tmp_path / "sequences.fastq"
+    fastq.write_text(
+        "@seq1\nATGC\n+\nIIII\n"
+        "@seq2\nATCC\n+\nIIII\n"
+        "@seq3\nAAAA\n+\nIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["distances", str(fastq)])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "seq1, seq2: 1\n"
+        "seq1, seq3: 3\n"
+        "seq2, seq3: 3\n"
+    )
+
+def test_distances_command_accepts_rna(tmp_path):
+    fasta = tmp_path / "rna.fasta"
+    fasta.write_text(
+        ">seq1\nAUGC\n"
+        ">seq2\nAUCC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["distances", str(fasta), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "seq1, seq2: 1\n"
+
+def test_distances_command_accepts_protein(tmp_path):
+    fasta = tmp_path / "protein.fasta"
+    fasta.write_text(
+        ">seq1\nMKWV\n"
+        ">seq2\nMKLV\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["distances", str(fasta), "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "seq1, seq2: 1\n"
+
+def test_distances_command_rejects_invalid_molecule_type(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGC\n"
+        ">seq2\nATCC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["distances", str(fasta), "--molecule-type", "CARROT"],
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, ValueError)
+
+def test_distances_command_single_sequence(tmp_path):
+    fasta = tmp_path / "sequence.fasta"
+    fasta.write_text(
+        ">seq1\nATGC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["distances", str(fasta)])
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+
+def test_distances_command_fastq_accepts_rna(tmp_path):
+    fastq = tmp_path / "rna.fastq"
+    fastq.write_text(
+        "@seq1\nAUGC\n+\nIIII\n"
+        "@seq2\nAUCC\n+\nIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["distances", str(fastq), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "seq1, seq2: 1\n"

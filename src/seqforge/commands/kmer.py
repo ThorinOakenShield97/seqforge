@@ -2,7 +2,6 @@ import typer
 
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.models.fastq_read import FastqRead
-from seqforge.exceptions import InvalidFastaError
 from seqforge.models.sequence import Sequence
 
 def kmer(sequence: str, k:int | None = None, find: list[str] | None = None, counts: bool = False, frequencies: bool = False):
