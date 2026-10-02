@@ -1268,6 +1268,117 @@ def test_orf_command_accepts_rna_fasta_with_molecule_type(tmp_path):
         "AUGAAAUAG",
     ]
 
+def test_orf_command_accepts_fastq(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nATGAAATAG\n+\nIIIIIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["orf", str(fastq)],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "ATGAAATAG\n"
+    )
+
+def test_orf_command_accepts_fastq_multiple_records(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nATGAAATAG\n+\nIIIIIIIII\n"
+        "@seq2\nATGCCCTAA\n+\nIIIIIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["orf", str(fastq)])
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "ATGAAATAG\n"
+        "@seq2\n"
+        "ATGCCCTAA\n"
+    )
+
+def test_orf_command_fastq_accepts_rna(tmp_path):
+    fastq = tmp_path / "rna.fastq"
+    fastq.write_text(
+        "@seq1\nAUGAAAUAA\n+\nIIIIIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["orf", str(fastq), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "AUGAAAUAA\n"
+    )
+
+def test_orf_command_fastq_reverse_strand(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nTTATTTCAT\n+\nIIIIIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["orf", str(fastq), "--strand", "reverse"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "ATGAAATAA\n"
+    )
+
+def test_transcribe_command_fastq_forward_strand(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nATGC\n+\nIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fastq), "--strand", "coding"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "AUGC\n"
+    )
+
+def test_transcribe_command_fastq_both_strands(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nATGC\n+\nIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fastq), "--strand", "both"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "Coding:\n"
+        "AUGC\n"
+        "Template:\n"
+        "GCAU\n"
+    )
+
 def test_stats_command_accepts_rna_fastq_with_molecule_type(tmp_path):
     fastq = tmp_path / "reads.fastq"
     fastq.write_text(
@@ -1964,6 +2075,63 @@ def test_reverse_transcribe_command_fastq_multiple_sequences(tmp_path):
     assert result.stdout == (
         "TACGGA\n"
         "AATCCG\n"
+    )
+
+def test_transcribe_command_accepts_fastq(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nATGC\n+\nIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fastq)],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "AUGC\n"
+    )
+
+def test_transcribe_command_accepts_fastq_multiple_records(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nATGC\n+\nIIII\n"
+        "@seq2\nGCAT\n+\nIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fastq)],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "AUGC\n"
+        "@seq2\n"
+        "GCAU\n"
+    )
+
+def test_transcribe_command_fastq_template_strand(tmp_path):
+    fastq = tmp_path / "reads.fastq"
+    fastq.write_text(
+        "@seq1\nGCAT\n+\nIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["transcribe", str(fastq), "--strand", "template"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "AUGC\n"
     )
 
 def test_kmer_command_frequencies():

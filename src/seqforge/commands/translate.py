@@ -19,13 +19,22 @@ def translate(sequence: str, frame: int | None = None, molecule_type: str = 'dna
         ValueError: If the molecule type, frame, or sequence is invalid.
     """
     try:
-        results = resolve_input(sequence,molecule_type)
+        results = resolve_input(sequence, molecule_type)
 
-        for seq in results.sequences:
+        if results.source == InputSource.FASTQ:
+            records = [Sequence(id=record.id, sequence=record.sequence, molecule_type=molecule_type) for record in results.records
+    ]
+        else:
+            records = results.sequences
+
+        for seq in records:
             if results.source == InputSource.FASTA:
                 print(f">{seq.id}")
+            elif results.source == InputSource.FASTQ:
+                print(f"@{seq.id}")
 
-            protein = seq.translate(frame = frame)                                        
+            protein = seq.translate(frame = frame)
+                                               
             if protein:
                 print(f"Protein: {protein}")
             else:
