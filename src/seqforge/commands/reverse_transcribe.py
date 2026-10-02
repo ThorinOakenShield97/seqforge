@@ -1,4 +1,4 @@
-from seqforge.commands.input import InputSource, resolve_input
+from seqforge.commands.input import resolve_input
 from seqforge.models.sequence import Sequence
 from seqforge.models.molecule_type import MoleculeType
 

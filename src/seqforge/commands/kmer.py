@@ -4,7 +4,7 @@ from seqforge.commands.input import InputSource, resolve_input
 from seqforge.models.fastq_read import FastqRead
 from seqforge.models.sequence import Sequence
 
-def kmer(sequence: str, k:int | None = None, find: list[str] | None = None, counts: bool = False, frequencies: bool = False):
+def kmer(sequence: str, k:int | None = None, find: list[str] | None = None, counts: bool = False, frequencies: bool = False, molecule_type: str = "DNA"):
     """Display k-mers found in a biological sequence.
 
     Args:
@@ -20,7 +20,7 @@ def kmer(sequence: str, k:int | None = None, find: list[str] | None = None, coun
         if counts and frequencies or counts and find or frequencies and find:
              raise ValueError('commands must be given one by one')
       
-        results = resolve_input(sequence)
+        results = resolve_input(sequence, molecule_type)
         for record in results.records:
           if isinstance(record, FastqRead):
                seq = Sequence(id = record.id, sequence = record.sequence)

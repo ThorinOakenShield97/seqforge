@@ -1,5 +1,3 @@
-import typer
-
 from seqforge.models.sequence import Sequence
 
 def distance(seq_1:str, seq_2:str, molecule_type:str = 'DNA'):

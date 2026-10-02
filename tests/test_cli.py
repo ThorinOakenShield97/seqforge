@@ -1216,6 +1216,24 @@ def test_translate_command_accepts_rna_fasta_with_molecule_type(tmp_path):
         "Protein: MK",
     ]
 
+def test_translate_command_accepts_fastq_rna(tmp_path):
+    fastq = tmp_path / "rna.fastq"
+    fastq.write_text(
+        "@seq1\nAUGAAAUAG\n+\nIIIIIIIII\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["translate", str(fastq), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "@seq1\n"
+        "Protein: MK\n"
+    )
+
 def test_gc_command_accepts_rna_fasta_with_molecule_type(tmp_path):
     fasta = tmp_path / "sequence.fasta"
     fasta.write_text(">seq1\nAUGC\n")
@@ -1756,6 +1774,60 @@ def test_align_command_fasta_multiple_gaps(tmp_path):
         "AT-C\n"
     )
 
+def test_align_command_accepts_rna(tmp_path):
+    fasta = tmp_path / "rna.fasta"
+    fasta.write_text(
+        ">seq1\nAUGC\n"
+        ">seq2\nAUCC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["align", str(fasta), "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "AUGC\n"
+        "AUCC\n"
+    )
+
+def test_align_command_accepts_protein(tmp_path):
+    fasta = tmp_path / "protein.fasta"
+    fasta.write_text(
+        ">seq1\nMKWV\n"
+        ">seq2\nMKLV\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["align", str(fasta), "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "MKWV\n"
+        "MKLV\n"
+    )
+
+def test_align_command_rejects_invalid_molecule_type(tmp_path):
+    fasta = tmp_path / "sequences.fasta"
+    fasta.write_text(
+        ">seq1\nATGC\n"
+        ">seq2\nATCC\n"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        ["align", str(fasta), "--molecule-type", "CARROT"],
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, ValueError)
+
 def test_motif_command_literal():
     runner = CliRunner()
 
@@ -1813,6 +1885,39 @@ def test_motif_command_fastq_multiple_sequences(tmp_path):
         "positions: [1, 4]\n"
         "positions: [4]\n"
     )
+
+def test_motif_command_accepts_rna():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["motif", "AUGCAUGC", "AUG", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "positions: [1, 5]\n"
+
+def test_motif_command_accepts_protein():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["motif", "MKWVMKWV", "WV", "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == "positions: [3, 7]\n"
+
+def test_motif_command_rejects_invalid_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["motif", "ATGC", "AT", "--molecule-type", "CARROT"],
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, ValueError)
 
 def test_reverse_transcribe_command_literal():
     runner = CliRunner()
@@ -2026,6 +2131,47 @@ def test_kmer_command_find_fastq_multiple_sequences(tmp_path):
         "ATG: [3]\n"
         "TGC: []\n"
     )
+
+def test_kmer_command_accepts_rna():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "AUGC", "--k", "2", "--molecule-type", "RNA"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "AU\n"
+        "UG\n"
+        "GC\n"
+    )
+
+def test_kmer_command_accepts_protein():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "MKWV", "--k", "2", "--molecule-type", "PROTEIN"],
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == (
+        "MK\n"
+        "KW\n"
+        "WV\n"
+    )
+
+def test_kmer_command_rejects_invalid_molecule_type():
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["kmer", "ATGC", "--k", "2", "--molecule-type", "CARROT"],
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, ValueError)
 
 def test_distance_command_literal():
     runner = CliRunner()
