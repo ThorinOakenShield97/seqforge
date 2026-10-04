@@ -1,4 +1,20 @@
-def pairwise_distances(sequences):
+from seqforge.models.sequence import Sequence
+
+def pairwise_distances(sequences: list[Sequence]) -> list[tuple[str,str,int]]:
+    """
+    Calculate pairwise Hamming distances between sequences.
+
+    Args:
+        sequences: Sequences to compare pairwise.
+
+    Returns:
+        A list of tuples containing the IDs of each sequence pair and
+        their Hamming distance.
+
+    Raises:
+        ValueError: If any pair of sequences has incompatible molecule types
+        or different lengths.
+    """
 
     results = []
     for i, seq_1 in enumerate(sequences):

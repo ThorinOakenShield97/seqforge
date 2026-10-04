@@ -26,28 +26,28 @@ def main() -> None:
     """SeqForge command line interface."""
     pass
 
+app.command("align")(align)
+
+app.command('distance')(distance)
+
+app.command('distances')(distances)
+
+app.command('filter')(filter)
+
 app.command("gc")(gc)
 
-app.command("translate")(translate)
+app.command("kmer")(kmer)
+
+app.command('motif')(motif)
 
 app.command("orf")(orf)
 
-app.command("version")(version)
+app.command('reverse-transcribe')(reverse_transcribe)
 
 app.command("stats")(stats)
 
 app.command("transcribe")(transcribe)
 
-app.command("kmer")(kmer)
+app.command("translate")(translate)
 
-app.command('filter')(filter)
-
-app.command("align")(align)
-
-app.command('motif')(motif)
-
-app.command('reverse-transcribe')(reverse_transcribe)
-
-app.command('distance')(distance)
-
-app.command('distances')(distances)
+app.command("version")(version)

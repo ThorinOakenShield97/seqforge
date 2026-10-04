@@ -1,5 +1,22 @@
-def global_alignment(seq1, seq2, match=1, mismatch=-1, gap=-1):
+from seqforge.models.sequence import Sequence
 
+def global_alignment(seq1: Sequence, seq2: Sequence, match:int =1, mismatch:int =-1, gap:int =-1) -> tuple[str,str]:
+    """Globally align two biological sequences.
+
+    Args:
+        seq1: First sequence to align.
+        seq2: Second sequence to align.
+        match: Score assigned to matching symbols.
+        mismatch: Score assigned to mismatching symbols.
+        gap: Score assigned to introducing a gap.
+
+    Returns:
+        A tuple containing the two aligned sequences.
+
+    Raises:
+        ValueError: If the sequences have different molecule types.
+    """
+    
     if seq1.molecule_type != seq2.molecule_type:
         raise ValueError('Sequences must have the same molecule type')
 
@@ -71,7 +88,20 @@ def global_alignment(seq1, seq2, match=1, mismatch=-1, gap=-1):
 
     return aligned_seq1, aligned_seq2
 
-def multiple_alignment(sequences):
+def multiple_alignment(sequences: list[Sequence]) -> list[str]:
+    """Align multiple biological sequences progressively.
+
+    Args:
+        sequences: Sequences to align. The first sequence is used as the
+        reference for progressive alignment.
+
+    Returns:
+        A list containing the aligned sequences.
+
+    Raises:
+        ValueError: If no sequences are provided or the sequences have
+        incompatible molecule types.
+    """
 
     if not sequences:
         raise ValueError('No sequences in list to be aligned')

@@ -1,4 +1,8 @@
-def filter_by_length(sequences, min_length = None, max_length = None):
+from seqforge.models.sequence import Sequence
+from seqforge.models.fastq_read import FastqRead
+from collections.abc import Iterable
+
+def filter_by_length(sequences: Iterable[Sequence | FastqRead], min_length: int | None = None, max_length: int | None = None) -> list[Sequence | FastqRead]:
     """Filter sequences by their length.
 
     Args:
@@ -44,7 +48,7 @@ def filter_by_length(sequences, min_length = None, max_length = None):
 
     return results
 
-def filter_by_motif(sequences, motif: str):
+def filter_by_motif(sequences: Iterable[Sequence | FastqRead], motif: str) -> list[Sequence | FastqRead]:
 
     """Filter sequences that contain a given motif.
 
@@ -66,7 +70,7 @@ def filter_by_motif(sequences, motif: str):
             results.append(sequence)
     return results
 
-def filter_by_quality(sequences, min_quality:int):
+def filter_by_quality(sequences: Iterable[FastqRead], min_quality: int,) -> list[FastqRead]:    
     """Filter FASTQ reads by their minimum mean quality.
 
     Args:

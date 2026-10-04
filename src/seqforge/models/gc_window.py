@@ -1,6 +1,6 @@
 from seqforge.models.sequence import Sequence
 
-def gc_content_windows(sequence, window_size: int):
+def gc_content_windows(sequence: Sequence, window_size: int) -> list[tuple[int, int, float]]:
     """Calculate GC content over sliding windows.
 
     Args:

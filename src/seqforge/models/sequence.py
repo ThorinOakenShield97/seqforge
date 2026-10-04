@@ -259,7 +259,17 @@ class Sequence:
 
         return sequence.replace('T', 'U')
 
-    def reverse_transcribe(self):
+    def reverse_transcribe(self) -> "Sequence":
+        """Reverse transcribe an RNA sequence into complementary DNA.
+
+        Returns:
+            A new Sequence containing the complementary DNA sequence,
+            preserving the sequence identifier.
+
+        Raises:
+            ValueError: If the sequence is not an RNA sequence.
+        """
+
         if self.molecule_type != MoleculeType.RNA:
             raise ValueError('Cannot reverse transcribe DNA or protein')
 
@@ -467,7 +477,18 @@ class Sequence:
 
         return kmers
 
-    def kmer_frequencies(self, k:int) -> dict:
+    def kmer_frequencies(self, k:int) -> dict[str, float]:
+        """Return the relative frequency of each k-mer in the sequence.
+
+        Args:
+            k: Length of each k-mer.
+
+        Returns:
+            A dictionary mapping each k-mer to its relative frequency.
+
+        Raises:
+            ValueError: If k is not a positive integer.
+        """
 
         results = self.kmer_counts(k)
         total = sum(results.values())
@@ -479,7 +500,20 @@ class Sequence:
 
         return frequencies
 
-    def find_kmers(self, kmer:list[str]) -> dict:
+    def find_kmers(self, kmer:list[str]) -> dict[str, list[int]]:
+        """Find occurrences of specified k-mers in the sequence.
+
+        Args:
+            kmer: K-mers to search for.
+
+        Returns:
+            A dictionary mapping each requested k-mer to a list of its
+            1-based starting positions.
+
+        Raises:
+            ValueError: If any requested k-mer is empty.
+            TypeError: If a requested k-mer is not a string.
+        """
 
         positions = {}
         sequence = self.sequence.upper()
@@ -499,7 +533,7 @@ class Sequence:
         return positions
 
 
-    def amino_acid_counts(self):
+    def amino_acid_counts(self) -> dict:
         """Return the count of each amino acid residue in the sequence, normalized to uppercase, restricted to proteins.
         
         Raises:
@@ -521,7 +555,7 @@ class Sequence:
 
         return counts
 
-    def amino_acid_frequencies(self):
+    def amino_acid_frequencies(self) -> dict:
         """Return the frequency of each amino acid residue in the sequence as a percentage, restricted to proteins.
 
             Raises:
@@ -538,8 +572,20 @@ class Sequence:
             frequencies[aa] = counts[aa]/total * 100
         return frequencies
 
-    def distance(self, other):
+    def distance(self, other: "Sequence") -> int:
+        """Calculate the Hamming distance to another sequence.
 
+        Args:
+            other: Sequence to compare with.
+
+        Returns:
+            The number of positions containing different symbols.
+
+        Raises:
+            ValueError: If the sequences have different molecule types or
+            different lengths.
+        """
+        
         if self.molecule_type != other.molecule_type:
             raise ValueError('Sequences must have the same molecule type')
 
