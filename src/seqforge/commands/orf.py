@@ -1,21 +1,26 @@
+import typer
+
+
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.exceptions import InvalidFastaError
-from seqforge.models.sequence import Sequence, MoleculeType
-import typer
+from seqforge.models.sequence import Sequence
+from seqforge.exceptions import InvalidFastaError, InvalidFastqError
 
 def orf(sequence: str, strand: str = "forward", frame: int | None = None, molecule_type: str = 'dna') -> None:
     """Find open reading frames in a DNA or RNA sequence.
 
     Args:
-        sequence: Literal sequence or path to a FASTA file.
+        sequence: Literal sequence or path to a FASTA or FASTQ file.
         strand: Strand to search: "forward", "reverse", or "both".
         frame: Reading frame to search, or None to search all frames.
         molecule_type: Molecule type of the input sequence. Defaults to DNA.
 
     Raises:
         FileNotFoundError: If the input file does not exist.
-        InvalidFastaError: If the FASTA file is invalid.
-        ValueError: If the molecule type, strand, frame, or sequence is invalid."""
+        InvalidFastaError: If the FASTA input is invalid.
+        InvalidFastqError: If the FASTQ input is invalid.
+        ValueError: If the molecule type, strand, frame, or sequence is invalid.
+    """
 
     try:
         results = resolve_input(sequence, molecule_type)
@@ -65,6 +70,9 @@ def orf(sequence: str, strand: str = "forward", frame: int | None = None, molecu
         raise typer.Exit(code=1)
     except FileNotFoundError as f:
         typer.echo(f"Error: {f}", err=True)
+        raise typer.Exit(code=1)
+    except InvalidFastqError as e:
+        typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1)
         
     

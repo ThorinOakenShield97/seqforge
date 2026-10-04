@@ -29,14 +29,17 @@ def resolve_input(value: str, molecule_type: MoleculeType | str = MoleculeType.D
 
     Args:
         value: Literal sequence or path to a FASTA/FASTQ file.
-        molecule_type: Molecule type assigned to parsed sequences. Defaults to DNA.
+        molecule_type: Molecule type assigned to parsed sequences.
+        Defaults to DNA.
 
     Returns:
         A ResolvedInput containing the parsed records and their source.
 
     Raises:
         ValueError: If molecule_type is invalid.
-        FileNotFoundError: If a FASTA/FASTQ file is not found.
+        InvalidFastaError: If the FASTA input is invalid.
+        InvalidFastqError: If the FASTQ input is invalid.
+        FileNotFoundError: If the input file is not found.
     """
     input_path = Path(value)
 
@@ -52,7 +55,7 @@ def resolve_input(value: str, molecule_type: MoleculeType | str = MoleculeType.D
         if input_path.suffix.lower() in FASTQ_EXTENSIONS:
             records = parse_fastq(input_path)
             return ResolvedInput(sequences = [], source = InputSource.FASTQ, records = records)
-        # FASTA support will be added next.
+        
         records = parse_fasta(input_path, molecule_type)
         return ResolvedInput(sequences = parse_fasta(input_path, molecule_type), source = InputSource.FASTA, records = records)
 

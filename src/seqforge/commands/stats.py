@@ -3,7 +3,7 @@ import typer
 
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.models.fastq_read import FastqRead
-from seqforge.exceptions import InvalidFastaError
+from seqforge.exceptions import InvalidFastaError, InvalidFastqError
 from seqforge.models.sequence import Sequence, MoleculeType
 
 
@@ -21,7 +21,9 @@ def stats(sequence: str, molecule_type: str = 'dna' ) -> None:
     Raises:
         ValueError: If the molecule type or sequence is invalid.
         FileNotFoundError: If the input file does not exist.
-        InvalidFastaError: If the FASTA input is invalid."""
+        InvalidFastaError: If the FASTA input is invalid.
+    """
+    
     try:
         resolved = resolve_input(sequence, molecule_type)
         if not sequence:
@@ -113,4 +115,7 @@ def stats(sequence: str, molecule_type: str = 'dna' ) -> None:
         raise typer.Exit(code=1)
     except InvalidFastaError as i:
         typer.echo(f"Error: {i}", err=True)
+        raise typer.Exit(code=1)
+    except InvalidFastqError as e:
+        typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1)

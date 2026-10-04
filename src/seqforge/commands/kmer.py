@@ -3,19 +3,28 @@ import typer
 from seqforge.commands.input import InputSource, resolve_input
 from seqforge.models.fastq_read import FastqRead
 from seqforge.models.sequence import Sequence
+from seqforge.exceptions import InvalidFastaError, InvalidFastqError
 
-def kmer(sequence: str, k:int | None = None, find: list[str] | None = None, counts: bool = False, frequencies: bool = False, molecule_type: str = "DNA"):
-    """Display k-mers found in a biological sequence.
+def kmer(sequence: str, k:int | None = None, find: list[str] | None = None, counts: bool = False, frequencies: bool = False, molecule_type: str = "DNA") -> None:
+    """
+    Display k-mers found in a biological sequence.
 
     Args:
-        sequence: Literal sequence or path to a FASTA/FASTQ file.
+        sequence: Literal sequence or path to a FASTA or FASTQ file.
         k: Length of each k-mer.
-        counts: If True, display the counts of each k-mer.
-     
-     Raises:
-          ValueError: If k is not a positive integer.
-          FileNotFoundError: If the input file does not exist.
+        find: K-mers to search for in the sequence.
+        counts: If True, display the count of each k-mer.
+        frequencies: If True, display the relative frequency of each k-mer.
+        molecule_type: Molecule type of the input sequence. Defaults to DNA.
+
+    Raises:
+        InvalidFastaError: If the FASTA input is invalid.
+        InvalidFastqError: If the FASTQ input is invalid.
+        FileNotFoundError: If the input file does not exist.
+        ValueError: If the k-mer parameters or molecule type are invalid,
+        or if incompatible modes are selected.
     """
+    
     try:
         if counts and frequencies or counts and find or frequencies and find:
              raise ValueError('commands must be given one by one')
@@ -52,7 +61,16 @@ def kmer(sequence: str, k:int | None = None, find: list[str] | None = None, coun
                for k_mer in k_mers:
                     print(k_mer)
                    
-    except FileNotFoundError as f:
-            typer.echo(f"Error: {f}", err = True)
-            raise typer.Exit(code=1)
+    except InvalidFastaError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+    except InvalidFastqError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+    except FileNotFoundError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
     

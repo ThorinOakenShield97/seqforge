@@ -1,21 +1,22 @@
 import typer
 
-from seqforge.models.sequence import Sequence,MoleculeType
+from seqforge.models.sequence import Sequence
 from seqforge.commands.input import InputSource, resolve_input
-from seqforge.exceptions import InvalidFastaError
+from seqforge.exceptions import InvalidFastaError, InvalidFastqError
 
 
 def translate(sequence: str, frame: int | None = None, molecule_type: str = 'dna') -> None:
     """Translate a DNA or RNA sequence into a protein sequence.
-    
+
     Args:
-        sequence: Literal sequence or path to a FASTA file.
+        sequence: Literal sequence or path to a FASTA or FASTQ file.
         frame: Reading frame to use, or None to search from the first start codon.
         molecule_type: Molecule type of the input sequence. Defaults to DNA.
 
     Raises:
         FileNotFoundError: If the input file does not exist.
-        InvalidFastaError: If the FASTA file is invalid.
+        InvalidFastaError: If the FASTA input is invalid.
+        InvalidFastqError: If the FASTQ input is invalid.
         ValueError: If the molecule type, frame, or sequence is invalid.
     """
     try:
@@ -39,11 +40,15 @@ def translate(sequence: str, frame: int | None = None, molecule_type: str = 'dna
                 print(f"Protein: {protein}")
             else:
                 print("No start codon found.")
+    
     except FileNotFoundError as f:
         typer.echo(f"Error: {f}", err=True)
         raise typer.Exit(code=1)
     except InvalidFastaError as i:
         typer.echo(f"Error: {i}", err=True)
+        raise typer.Exit(code=1)
+    except InvalidFastqError as e:
+        typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1)
     except ValueError as v:
         typer.echo(f"Error: {v}", err=True)

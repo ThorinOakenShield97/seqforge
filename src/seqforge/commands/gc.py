@@ -2,7 +2,7 @@ import typer
 
 from seqforge.models.sequence import Sequence
 from seqforge.commands.input import InputSource, resolve_input
-from seqforge.exceptions import InvalidFastaError
+from seqforge.exceptions import InvalidFastaError, InvalidFastqError
 from seqforge.models.fastq_read import FastqRead
 from seqforge.models.gc_window import gc_content_windows
 
@@ -62,6 +62,9 @@ def gc(sequence: str, molecule_type: str = 'dna', window_size: int | None = None
         raise typer.Exit(code=1)
     except InvalidFastaError as i:
         typer.echo(f"Error: {i}", err=True)
+        raise typer.Exit(code=1)
+    except InvalidFastqError as e:
+        typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1)
 
 
